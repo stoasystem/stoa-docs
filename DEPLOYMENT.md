@@ -13,7 +13,6 @@ cd stoa-infra
 uv sync
 aws sts get-caller-identity   # verify credentials
 uv run cdk bootstrap aws://ACCOUNT_ID/eu-central-2
-uv run cdk bootstrap aws://ACCOUNT_ID/us-east-1   # for FrontendStack
 ```
 
 ## 2. Deploy Infrastructure

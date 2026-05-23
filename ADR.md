@@ -35,9 +35,9 @@
 **Decision:** Use `claude-haiku` as default model.  
 **Rationale:** ~5× cheaper than Claude Sonnet, sufficient quality for structured step-by-step math explanations. Upgrade path to Sonnet available for Premium tier.
 
-## ADR-006: FrontendStack in us-east-1
+## ADR-006: 所有 Stack 统一部署在 eu-central-2
 
 **Status:** Accepted  
-**Context:** CloudFront + ACM certificate deployment.  
-**Decision:** Deploy FrontendStack to us-east-1, main infra to eu-central-2.  
-**Rationale:** CloudFront only reads ACM certificates from us-east-1, regardless of distribution's primary region. CDK CrossRegionReferences handles the cross-region dependency.
+**Context:** CloudFront + S3 FrontendStack 的部署 Region 选择。  
+**Decision:** FrontendStack 与其他所有 Stack 统一部署在 eu-central-2（苏黎世）。  
+**Rationale:** 所有资源集中在同一 Region，减少运维复杂度，符合 nDSG 数据驻留要求。CloudFront 作为全球边缘网络，S3 源站在 eu-central-2 对全球访问速度影响可忽略。如未来需要绑定自定义域名（stoa.ch）+ ACM 证书，可在 us-east-1 单独创建一张证书并在 CloudFront 中引用，无需迁移整个 Stack。

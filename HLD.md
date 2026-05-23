@@ -27,7 +27,7 @@
 ┌─────────────┐    ┌──────────────────────────────────────────────────────┐
 │   学生/家长  │    │                    AWS Cloud (eu-central-2)           │
 │   老师/管理  │    │                                                      │
-│   [Browser] │    │  CloudFront ──→ S3 (SPA)      (us-east-1)            │
+│   [Browser] │    │  CloudFront ──→ S3 (SPA)                             │
 └──────┬──────┘    │                                                      │
        │ HTTPS      │  API Gateway (HTTP API)                              │
        │            │    │                                                │
@@ -428,7 +428,7 @@ stoa-infra/
 │   ├── ai_stack.py          # Bedrock IAM 权限 + EventBridge 周报调度
 │   ├── notification_stack.py # SQS FIFO + SES 域名验证
 │   ├── monitoring_stack.py  # CloudWatch Dashboard + Alarms
-│   └── frontend_stack.py    # S3 SPA + CloudFront + OAC (us-east-1)
+│   └── frontend_stack.py    # S3 SPA + CloudFront + OAC (eu-central-2)
 ```
 
 ### 8.2 AuthStack
