@@ -35,6 +35,12 @@
 
 ### 剩余任务
 
+> **S0-01 MSW 已从浏览器包撤出（2026-08-10）**：原方案用 `VITE_ENABLE_MSW` 在
+> `main.tsx` / `src/lib/env.ts` 中开关，这违反了"runtime-config.json 是运行时唯一
+> 真相源"的架构约束，直接打破 `tests/release/runtime-startup-barrier.test.mjs` 与
+> `runtime-env-projection.test.mjs` 两个发布门禁。handlers 保留，改由
+> `tests/mswServer.ts`（`msw/node`）在测试侧消费，mock 代码不再进入生产包。
+
 #### S0-01：移除 demo backend，引入 MSW
 **Owner**：前端  
 **工时**：10h  
@@ -421,6 +427,22 @@ getMemory(params: { subject?: string; limit?: number }): Promise<MemoryResponse>
 - 有提问历史的学生：显示真实薄弱点，掌握度进度条正确
 
 ---
+
+> ### ⚠️ 测试方式修正（2026-08-10）
+> 早前为这些任务写的"单元测试"把被测逻辑**在测试文件里抄了一遍**，因此无论生产代码
+> 如何变化都恒为绿。改成驱动真实代码后，一次性暴露出 5 个此前完全没被发现的缺陷：
+>
+> | # | 缺陷 | 影响 | 只有真实测试能发现的原因 |
+> |---|------|------|------------------------|
+> | 1 | 记忆摘要按 snake_case 读取，实际返回 camelCase | 薄弱知识点卡片恒空、AI 个性化恒空 | 镜像测试用的是自己造的数据 |
+> | 2 | `actor.user` 属性不存在，每次请求抛 `AttributeError` 被宽 except 吞掉 | **个性化在生产中完全失效** | 镜像测试从不调用真实 `_execute_message_command` |
+> | 3 | `memory_context` 绕过 `_sanitise_input` | 学生可构造提问，让注入文本进入 system prompt | 镜像测试不走真实 `get_ai_answer` |
+> | 4 | 记忆查询（3 次表读）位于 AI 租约临界区内 | 并发重复请求会超出有界重放等待，返回虚假 `message_in_progress` | 需真实并发测试 |
+> | 5 | `MathRenderer` 畸形公式降级分支未转义即拼入 `dangerouslySetInnerHTML` | **AI 输出可注入 DOM 节点（XSS）** | 需真实 jsdom 渲染 |
+>
+> 前端此前没有任何组件测试运行器，现已引入 vitest + jsdom + Testing Library
+> （仅 devDependency，`vitest.config.ts` 与 `vite.config.ts` 分离，不影响生产构建）。
+> 命令：`npm test`。当前 44 个组件测试 + 后端 22 个真实 AI 链路测试。
 
 #### S1-FE-02：解答页多轮追问 UI ✅ 已完成（2026-08-10）
 > 多轮对话链路（`ChatPage` + `/conversations/{id}/messages`）已存在，实际补齐的是快捷追问入口：
