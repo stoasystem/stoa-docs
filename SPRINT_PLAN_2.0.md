@@ -1,7 +1,8 @@
 # STOA 2.0 详细开发计划
 
-> **版本：** v1.0  
+> **版本：** v1.1  
 > **创建日期：** 2026-08-10  
+> **最后核对：** 2026-08-10（逐条比对代码，见 DESIGN_2.0.md §〇）  
 > **关联文档：** [DESIGN_2.0.md](./DESIGN_2.0.md) · [PLAN.md](./PLAN.md)  
 > **周期：** 每 Sprint 2 周，共 7 个 Sprint（14 周）
 
@@ -9,15 +10,21 @@
 
 ## 状态总览
 
+**任务完成 14 / 40（35%）** · 部分完成 5 · 未开始 21 · 被决策阻塞 5
+
 | Sprint | 主题 | 周期 | 状态 |
 |--------|------|------|------|
-| Sprint 0 | 前后端联调 + 清理收尾 | 第 1–2 周 | 🔄 进行中（清理已完成） |
-| Sprint 1 | 学生记忆层 + 多轮追问 | 第 3–4 周 | ⏳ 待启动 |
-| Sprint 2 | Claude Vision + 流式 UX + LaTeX | 第 5–6 周 | ⏳ 待启动 |
-| Sprint 3 | 自适应推荐 + WebSocket | 第 7–8 周 | ⏳ 待启动 |
-| Sprint 4 | 叙述式报告 + 老师 AI 2.0 | 第 9–10 周 | ⏳ 待启动 |
-| Sprint 5 | Bedrock Knowledge Base + PWA | 第 11–12 周 | ⏳ 待启动 |
+| Sprint 0 | 前后端联调 + 清理收尾 | 第 1–2 周 | 🔄 清理已完成，**联调三项未做** |
+| Sprint 1 | 学生记忆层 + 多轮追问 | 第 3–4 周 | ✅ 代码完成（未经真实链路验证） |
+| Sprint 2 | Claude Vision + 流式 UX + LaTeX | 第 5–6 周 | 🟡 UX/LaTeX 完成；Vision 阻塞 |
+| Sprint 3 | 自适应推荐 + WebSocket | 第 7–8 周 | 🟡 推荐完成；WebSocket 未部署 |
+| Sprint 4 | 叙述式报告 + 老师 AI 2.0 | 第 9–10 周 | 🟡 报告 2.0 前已实现；老师工具未开始 |
+| Sprint 5 | Bedrock Knowledge Base + PWA | 第 11–12 周 | ⛔ 两项均待决策 |
 | Sprint 6 | Bedrock Agents（Premium）| 第 13–14 周 | ⏳ 待启动 |
+
+> 🚨 **顺序被打乱了。** Sprint 1–3 已在 Sprint 0 未交付的前提下完成开发，
+> 意味着这些 AI 功能只有自动化测试覆盖，从未跑通真实 Cognito → API → UI 链路。
+> 建议下一步回到 Sprint 0 的联调、测试账号、端到端三项，再继续 Sprint 4。
 
 ---
 
