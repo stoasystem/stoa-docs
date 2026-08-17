@@ -1,7 +1,8 @@
 # Deployment Guide
 
 > **最后更新：** 2026-08-17  
-> **当前状态：** 生产环境运行中，但 **CI 不再自动部署**，发布必须手动执行（见下节）
+> **当前状态：** 生产环境运行中。**后端已恢复推送即自动部署**；infra 仅自动产出变更预览；
+> **前端尚未接入自动部署**（有会导致线上白屏的前置缺口，见下节）
 
 ---
 
@@ -22,30 +23,63 @@
 
 ---
 
-## CI/CD 现状：只验证，不部署
+## CI/CD 现状
 
-> 本节于 2026-08-17 依据 workflow 文件与 GitHub Actions 运行记录核实重写。
-> 此前版本声称「推送到 main 即自动部署」，该说法已不成立，照此操作会误以为代码已上线。
+每个仓库现在有两类互不干扰的 workflow：
 
-三个仓库的 workflow 在 2026-07-20 与 2026-07-31 两次改造后，已从「部署流水线」变成
-「发布资格验证流水线」：
+| 仓库 | workflow | 触发 | 作用 |
+|------|----------|------|------|
+| `stoa-backend` | `deploy-production.yml` | `push` → `main` | **部署**：门禁 → 构建 → 更新 Lambda |
+| `stoa-backend` | `deploy.yml` | 仅 `workflow_dispatch` | 无凭证的正式发布验证 DAG，不变更任何资源 |
+| `stoa-infra` | `cdk-diff.yml` | `push` → `main` | **只读**变更预览，不部署 |
+| `stoa-infra` | `deploy.yml` | 仅 `workflow_dispatch` | staging 资格验证，不变更任何资源 |
+| `stoa-frontend` | `frontend-ci.yml` / `deploy.yml` | 仅 `workflow_dispatch` | 验证型，**尚未接入部署** |
 
-| 仓库 | workflow | 触发方式 | 是否部署 |
-|------|----------|----------|----------|
-| `stoa-backend` | Formal Release Verification | 仅 `workflow_dispatch` | 否 |
-| `stoa-frontend` | Formal Release Verification / Frontend Staging Eligibility | 仅 `workflow_dispatch` | 否 |
-| `stoa-infra` | Infrastructure Staging Eligibility | 仅 `workflow_dispatch` | 否 |
+`docs/security/phase-474-workflow-policy.json` 里的 `production_mutation: NOT RUN` 只描述
+`deploy.yml` 那条正式交付 DAG，不是仓库级承诺；生产变更发生在 `deploy-production.yml`。
+该文件的门禁由 `tests/test_production_deploy_workflow_contract.py` 约束。
 
-关键事实：
+### 后端：推送 main 即部署
 
-- **没有 `push` / `pull_request` 触发器**，推送 `main` 不会启动任何 workflow。
-- staging 相关 job 只校验产物摘要并执行 `release_environment.py --help`，**不调用 AWS 变更 API**。
-- 流水线末尾显式输出 `production-infrastructure/deploy/smoke/rollback = NOT RUN`。
-- 后端最后一次真实部署尝试为 2026-07-16（旧版含 `Update Lambda function code` 的 workflow），
-  **在构建 Lambda 包步骤失败**，未完成部署；此后 workflow 即被替换为验证型。
+`verify` → `deploy` 两段：
 
-因此当前**任何发布都必须按下节手动执行**。OIDC 角色（`stoa-github-*-deploy`）仍然存在，
-但已无 workflow 使用它们。
+1. `verify`（无任何凭证）：`uv sync --frozen --extra dev` → `ruff check .` → `pytest`。
+   测试或 lint 不过就不会进入部署。
+2. `deploy`（`environment: production`，OIDC 取 `stoa-github-backend-deploy`）：
+   构建 Lambda 包 → 校验 provenance → `--dry-run` 预检 → 更新
+   `stoa-api` 与 `stoa-weekly-report` → 等待生效。
+
+构建跑在 **`ubuntu-24.04-arm`** 上。这一点是必需的而非优化：包内是 linux **aarch64** wheel，
+在 x64 runner 上 `boot_smoke` 无法导入这些二进制，只能靠 `--skip-smoke` 绕过，等于放弃
+「上线前证明 handler 可导入」这项检查。arm64 runner 对公开仓库免费，架构也与 Lambda 运行时一致。
+
+> 2026-07-16 那次部署失败的原因是 `pillow==12.3.0` 当时没有 aarch64 wheel（仓库只到 12.2.0）。
+> 该 wheel 已发布，且 `build_lambda_dist.py` 现在带 `manylinux_2_28` 往下的平台兼容阶梯。
+
+### 基础设施：只预览，不部署
+
+`cdk-diff.yml` 在推送后检出 infra 与 backend、构建 Lambda dist、执行 `cdk diff --all`，
+把变更面写入 run summary 并上传为 `cdk-diff` artifact。它**不含** `cdk deploy`。
+
+infra 上次真实部署为 2026-06-08，此后积压了 Lambda 别名交付、不可变发布指针、
+`GSI-ReviewState`、教师申请公开路由等变更。在人工审阅 diff 之前不要开启自动部署。
+
+### 前端：先别接自动部署
+
+当前 `main` 的 `src/main.tsx` 走 `startWebApplication`，启动时必须取到 `/served-release.json`
+与 `/runtime-config.json` 两份合法 JSON，任一失败即渲染「应用暂时无法启动」。而：
+
+- `public/` 里只有 `runtime-config.json.template` 与 `served-release.json.template`，
+  vite 会把模板原样拷进 `dist/`，所以 `aws s3 sync dist/` 传上去的是模板而非配置。
+- 描述文件要求每个对象带 S3 `versionId`，但线上 bucket **未启用版本控制**
+  （CDK `FrontendStack` 已写 `versioned=True`，未部署）。
+- **生成这两份描述文件的脚本尚不存在**（`verify-release.mjs` 产出的是校验 receipt）。
+
+线上目前正常，是因为它仍在服务 2026-07-27 的旧构建——那版还不需要这两份文件。
+curl `/runtime-config.json` 得到 200 是 CloudFront 的 SPA 回退（返回 `index.html`，
+`Content-Type: text/html`），不要据此认为配置已就位。
+
+接入顺序：先部署 infra 开启 bucket 版本控制 → 编写描述文件生成器 → 再接 `push` → 部署。
 
 ### 本地验证的环境要求
 
