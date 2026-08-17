@@ -1,7 +1,7 @@
 # Deployment Guide
 
-> **最后更新：** 2026-05-28  
-> **当前状态：** 生产环境已部署，CI/CD 已配置
+> **最后更新：** 2026-08-17  
+> **当前状态：** 生产环境运行中，但 **CI 不再自动部署**，发布必须手动执行（见下节）
 
 ---
 
@@ -18,25 +18,47 @@
 | **CloudFront（前端）** | `E27CVAMQHDMW80` → `d1hq27o785lonk.cloudfront.net` |
 | **API Gateway** | `vkuxk2gbue` → `https://vkuxk2gbue.execute-api.eu-central-2.amazonaws.com` |
 | **Cognito User Pool** | `eu-central-2_Ss93YQzjJ` |
-| **DynamoDB 表** | `stoa-table` |
+| **DynamoDB 表** | `stoa-main`（另有 `stoa-sandbox`） |
 
 ---
 
-## CI/CD 自动部署（推荐）
+## CI/CD 现状：只验证，不部署
 
-所有仓库已配置 **GitHub Actions + AWS OIDC**，推送到 `main` 分支即自动部署：
+> 本节于 2026-08-17 依据 workflow 文件与 GitHub Actions 运行记录核实重写。
+> 此前版本声称「推送到 main 即自动部署」，该说法已不成立，照此操作会误以为代码已上线。
 
-| 仓库 | 触发 | 流程 | 耗时 |
-|------|------|------|------|
-| `stoa-frontend` | push → main | lint → build → S3 sync → CloudFront invalidation | ~1 min |
-| `stoa-backend` | push → main | pip install (linux arm64) → lambda update-function-code | ~1 min |
-| `stoa-infra` | push → main | CDK diff → CDK deploy --all | ~6 min |
-| `stoa-infra` | PR → main | CDK diff（结果贴在 PR 评论） | ~3 min |
+三个仓库的 workflow 在 2026-07-20 与 2026-07-31 两次改造后，已从「部署流水线」变成
+「发布资格验证流水线」：
 
-**无需手动配置 AWS 凭证**，GitHub Actions 通过 OIDC 临时 Token 认证，IAM 角色：
-- `stoa-github-frontend-deploy`（S3 + CloudFront 只读写权限）
-- `stoa-github-backend-deploy`（Lambda update 权限）
-- `stoa-github-infra-deploy`（CDK PowerUser 权限）
+| 仓库 | workflow | 触发方式 | 是否部署 |
+|------|----------|----------|----------|
+| `stoa-backend` | Formal Release Verification | 仅 `workflow_dispatch` | 否 |
+| `stoa-frontend` | Formal Release Verification / Frontend Staging Eligibility | 仅 `workflow_dispatch` | 否 |
+| `stoa-infra` | Infrastructure Staging Eligibility | 仅 `workflow_dispatch` | 否 |
+
+关键事实：
+
+- **没有 `push` / `pull_request` 触发器**，推送 `main` 不会启动任何 workflow。
+- staging 相关 job 只校验产物摘要并执行 `release_environment.py --help`，**不调用 AWS 变更 API**。
+- 流水线末尾显式输出 `production-infrastructure/deploy/smoke/rollback = NOT RUN`。
+- 后端最后一次真实部署尝试为 2026-07-16（旧版含 `Update Lambda function code` 的 workflow），
+  **在构建 Lambda 包步骤失败**，未完成部署；此后 workflow 即被替换为验证型。
+
+因此当前**任何发布都必须按下节手动执行**。OIDC 角色（`stoa-github-*-deploy`）仍然存在，
+但已无 workflow 使用它们。
+
+### 本地验证的环境要求
+
+Lambda 构建与 CDK synth 都硬性要求 **Python 3.12**（CI 用 3.12.13）。在 3.13 下
+`scripts/build_lambda_dist.py` 会直接失败，并连带使 `test_lambda_dist_build.py` 全部报错：
+
+```bash
+uv python install 3.12
+UV_PROJECT_ENVIRONMENT=.venv312 uv run --python 3.12 --extra dev pytest -q
+```
+
+在 macOS 上构建属交叉编译（dist 内为 linux aarch64 wheel），本机无法导入，需加
+`--skip-smoke`；也因此 **CDK synth 无法在 macOS 上完成**（provenance 守卫会运行 boot smoke）。
 
 ---
 
@@ -86,16 +108,11 @@ aws cloudfront create-invalidation \
 ```bash
 cd stoa-backend
 
-# 重建 Lambda 包（必须用 linux arm64 wheels）
-rm -rf dist
-pip install \
-  --platform manylinux2014_aarch64 \
-  --implementation cp \
-  --python-version 3.12 \
-  --only-binary :all: \
-  --target dist \
-  -r requirements.txt
-cp -r src/stoa dist/stoa
+# 重建 Lambda 包。必须走此脚本而不是裸 pip：它固定 linux aarch64 wheel、
+# 产出 .stoa-build-manifest.json，而 CDK synth 的 provenance 守卫会校验该 manifest。
+# macOS 上属交叉编译，本机无法导入 linux 二进制，故需 --skip-smoke（CI always runs smoke）。
+UV_PROJECT_ENVIRONMENT=.venv312 uv run --python 3.12 \
+  python scripts/build_lambda_dist.py --repo-root . --dist dist --skip-smoke
 
 # 打包并更新 Lambda
 cd dist && zip -r ../lambda.zip . -q && cd ..
@@ -144,6 +161,51 @@ curl https://api.stoaedu.ch/health
 curl -sI https://app.stoaedu.ch | grep HTTP
 # → HTTP/2 200
 ```
+
+---
+
+## 教师邀请制上线前置条件
+
+> 核实时间 2026-08-17。前后端与 infra 代码均已入库，但下列外部条件未满足前，
+> 邀请制在生产环境无法走通。
+
+代码侧（已提交，**待部署**）：
+
+| 项 | 仓库 | 说明 |
+|----|------|------|
+| `claim` / 审核队列 / 状态查询 / 重发邀请 | `stoa-backend` | approve 之后的激活闭环 |
+| `GSI-ReviewState` | `stoa-infra` | 审核队列查询依赖；生产表当前**尚无**此索引 |
+| 三个免授权网关路由 | `stoa-infra` | 见下 |
+
+网关路由：候选人在申请、查状态、领取邀请时都还没有身份，这三个请求必须免 JWT。
+生产网关此前只有 `/auth/*` 与 `/health` 免授权，其余落入 `ANY /{proxy+}`（JWT），
+因此这三个请求都会得到 `401`：
+
+- `POST /teacher-applications`
+- `GET /teacher-applications/{application_id}/status`
+- `POST /teacher-applications/activation/claim`
+
+`POST /teacher-applications/activation/consume` 由已登录用户调用，留在 JWT 之后即可。
+注意 `GET /teacher-applications` 是审核队列，**必须保持在 JWT 之后**，
+所以这三条路由是按路径单独声明方法的，不能沿用 `/auth/*` 那种 POST+GET 批量写法。
+
+运维侧（需人工处理，代码无法覆盖）：
+
+1. **SES 仍在沙箱**：`ProductionAccessEnabled = false`，配额 200/日、1/秒。
+   域名 `stoaedu.ch` 已验证（发件地址 `noreply@stoaedu.ch` 可用），但沙箱状态下
+   **只能发给已验证地址**，候选人邮箱（如 gmail）会被拒。邀请信发送失败时
+   审核响应返回 `invitationDelivered: false`，候选人拿不到链接。
+   → 需向 AWS 申请解除沙箱限制。
+2. **无人持有 `teacher_identity_reviewer`**：生产表中现存的 capability 授权只有一条
+   `platform_operations_reader`。没有该权限则无法审核申请，也无法重发邀请。
+   通过 `POST /admin/privileged-identities/{id}/capabilities` 授予需要调用方先持有
+   `admin_identity_manager`，而当前同样无人持有 → 首次授权需要直接写库引导。
+3. **`app_base_url`**：默认 `https://app.stoaedu.ch`，邀请链接形如
+   `{app_base_url}/teacher-activate?token=...`，需与前端实际域名一致。
+
+Lambda 执行角色权限已具备，无需改动：`cognito-idp:AdminCreateUser` /
+`AdminSetUserPassword` / `AdminGetUser` / `AdminAddUserToGroup`、`ses:SendEmail` /
+`SendRawEmail`。
 
 ---
 
