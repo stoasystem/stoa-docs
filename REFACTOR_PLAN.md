@@ -208,6 +208,24 @@ STOA_SMOKE_PASSWORD='...' python scripts/smoke_live_flows.py --include-escalatio
 
 其中文件上传值得注意：后端有完整的 `/files/intents`、分块上传与 `complete` 流程，前端却在调不存在的 `POST /files`，属契约不匹配而非功能缺失。
 
+### P1-9 文件上传：四个缺陷叠加导致从未成功过 ✅
+
+按契约守卫的清单先处理文件上传（拍照提问是核心输入）。前端原本调不存在的 `POST /files`，改为实现后端真实的三段式流程后，逐层暴露出四个独立缺陷——**上传在生产环境从来没有成功过一次**。
+
+| # | 缺陷 | 位置 |
+|---|------|------|
+| 1 | `claim_upload_part` 用 `isinstance(x, int)` 校验存储的 `expires_at`，拒绝 DynamoDB 返回的 Decimal | `attachment_repo.py` |
+| 2 | `_require_positive_integer` 同样不接受 Decimal，导致分块列表读取失败 | `attachment_repo.py` |
+| 3 | `_transition` 声明了从不使用的占位符 `:one`，DynamoDB 以 ValidationException 拒绝整个请求 | `attachment_repo.py` |
+| 4 | 分块合并未回传各分块校验值，而上传创建时声明了 SHA256，S3 以 InvalidRequest 拒绝 | `attachment_service.py` |
+| 5 | 图片桶未启用版本控制，而代码要求 S3 返回 `VersionId`（另三个桶都已启用） | `stoa-infra/stacks/storage_stack.py` |
+
+诊断过程中还发现所有异常都被一个**不打日志的 catch-all** 收敛成 `upload_service_unavailable`，无法区分依赖故障与契约错误。已为其加上错误类别与 provider 错误码的记录（不输出对象键等私有坐标），这是定位缺陷 4 的关键。
+
+**共同教训**：这五个缺陷 2,944 个测试全部无法发现。前三个是夹具用 Python int 而真实表返回 Decimal；第三个是 fake 表不像 DynamoDB 那样校验表达式；第四、五个是 fake 不模拟 S3 的校验与版本语义。已补三个回归测试，其中一个用「像 DynamoDB 一样拒绝未使用占位符」的表替身，可捕获整类问题。
+
+**仍待处理的同类风险**：全仓库有 36 个文件、90 处 `isinstance(x, int)` 形式的存储值校验，其中多数文件在别处已处理 Decimal 却在这些位置遗漏。建议收敛为统一的规范化辅助函数。
+
 ### P1-8 建立真实接口冒烟测试基线
 
 **目标**：补上从未存在的 L2 层证据 — 证明接口在真实环境可用，而非函数逻辑正确。
