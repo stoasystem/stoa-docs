@@ -224,7 +224,21 @@ STOA_SMOKE_PASSWORD='...' python scripts/smoke_live_flows.py --include-escalatio
 
 **共同教训**：这五个缺陷 2,944 个测试全部无法发现。前三个是夹具用 Python int 而真实表返回 Decimal；第三个是 fake 表不像 DynamoDB 那样校验表达式；第四、五个是 fake 不模拟 S3 的校验与版本语义。已补三个回归测试，其中一个用「像 DynamoDB 一样拒绝未使用占位符」的表替身，可捕获整类问题。
 
-**仍待处理的同类风险**：全仓库有 36 个文件、90 处 `isinstance(x, int)` 形式的存储值校验，其中多数文件在别处已处理 Decimal 却在这些位置遗漏。建议收敛为统一的规范化辅助函数。
+**仍待处理的同类风险**：全仓库有 36 个文件、90 处 `isinstance(x, int)` 形式的存储值校验，其中多数文件在别处已处理 Decimal 却在这些位置遗漏。建议收敛为统一的规范化辅助函数。（已由 P1-10 处理。）
+
+### P1-10 Decimal 收敛：真实风险面远小于初估 ✅
+
+初步统计的「90 处待改」是高估。逐条追溯每个 `isinstance(x, int)` 校验所守护的值的来源后，全仓 104 处中只有 3 处守护的是真正从 DynamoDB 读回的值；其余守护的是调用方传入的时间戳、分页 limit、以及 Stripe 事件载荷等 JSON 解析结果——这些地方要求严格 `int` 是正确的，改动反而会削弱校验。因此本任务不引入全局辅助函数，只修这 3 处，并按各文件既有约定就地规范化。
+
+| # | 缺陷 | 生产后果 |
+|---|---|---|
+| 1 | `activate_retention_fence` 校验从表读回的 `generation` | 每一次调用都抛 `conditional_conflict`，附件保留围栏无法启用 |
+| 2 | `_optional_positive_int` 读取存储的 `attempt` 计数 | 归一化为 0，会话消息租约续期后返回 `upload_service_unavailable` |
+| 3 | `get_teacher_curriculum_assignment` 校验存储的 `version` | 静默返回 `None`，教师课纲分配形同不存在 |
+
+已实测确认真实表返回 `Decimal('1')`。三处均补回归测试，并用「改回旧写法后测试必须失败」的方式验证守卫确实有效。
+
+**冒烟套件扩展**：将文件上传（intent → chunk → complete）纳入 `smoke_live_flows.py`，使 P1-9 的验证从一次性人工确认变为持续守卫；同时修正教师队列检查的时序缺陷——该查询是 scan，最终一致，刚写入的升级需要有界重试才稳定可见。现为 13/13。
 
 ### P1-8 建立真实接口冒烟测试基线
 
