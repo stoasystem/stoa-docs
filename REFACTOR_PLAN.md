@@ -1,0 +1,264 @@
+# STOA 产品重构计划
+
+> 制定时间：2026-08-24
+> 范围：stoa-frontend / stoa-backend / stoa-infra
+> 产品目标：收敛为「以对话为唯一主界面、以真人老师实时答疑为核心卖点」的青少年学习产品
+
+---
+
+## 一、现状基线
+
+盘点自 2026-08-24，作为后续所有「减少了多少」的对照基准。
+
+| 指标 | 前端 | 后端 |
+|------|------|------|
+| 源码规模 | 596 文件 / 48,281 行 | 96,781 行 |
+| 对外接口 | 92 条路由 | 237 个端点 |
+| 最大单文件 | `ReportOperationsPage.tsx` 3,123 行 | `production_pilot_service.py` 6,359 行 |
+| 测试 | 48 个单测 | 148 文件 / 77,441 行 / 1,835 个测试函数 |
+
+`admin.py` 单文件承载 111 个端点、4,471 行，占后端对外面的 47%。
+
+### 核心能力真实状态
+
+真人老师链路的业务状态机（升级 → 派单 → 认领 → 接管 → 回复 → 结单）**已完整实现且并发安全**，使用 DynamoDB 条件事务 + 版本 CAS + 账户围栏，派单排名考虑负载比、SLA 罚分与近期派单惩罚。这部分是可复用资产。
+
+但存在四个阻断性缺口：
+
+1. **实时能力不存在。** `websocket_service.py`（479 行）与 `websocket_repo.py`（351 行）实现完整，但 `register_connection` / `disconnect_connection` 在 `src/` 内无任何调用方；没有 `$connect` / `$disconnect` handler；`stoa-infra` 九个 Stack 中 grep `websocket` 零命中。学生只能轮询获知老师回复。
+2. **SQS 升级队列名存实亡。** 队列、DLQ、消费者代码 `jobs/teacher_escalation.py` 均存在，但该 Lambda 从未在 CDK 中部署。实际派单是 API 请求内同步 best-effort；10 分钟接受超时后的重派需人工调用管理端接口，无调度器。
+3. **老师候选查询为全表扫描。** `list_teacher_profiles` 对 DynamoDB 做 `SK = "PROFILE"` 全表 scan 后过滤角色，无 GSI。
+4. **升级路径重复且有纯桩。** question 与 conversation 各有一套升级实现；`practice.py` 的 `request_teacher_help` 仅返回写死的德语文案，不升级、不派单，老师端不可见。
+
+### 流式与测试的真实状态
+
+- `POST /conversations/{id}/messages/stream` 是**伪流式**：同步取回完整 Bedrock 答案后切成 100 字符块一次性下发。代码注释已自认。根因是 API Gateway 缓冲响应，非参数问题。
+- 1,835 个测试函数**全部禁网运行**（conftest 中 `disable_socket`），以 fake 替换全部仓储与 provider。它们证明函数逻辑正确，不证明接口可用。这是审计判定「0/9 关键流程完成」的直接原因。
+
+---
+
+## 二、已确认的产品决策
+
+| # | 决策 | 影响 |
+|---|------|------|
+| 1 | 计费保留，保证逻辑通，暂不实际启用 | 不删除计费相关约 1.2–1.4 万行；Stripe 维持关闭态 |
+| 2 | 真人老师准入保留原策略（免费档不可用） | `teacher_support_allowance_service` 门控不变；测试需手动改档绕过 |
+| 3 | 练习 / 自适应 / 作业自动化全部保留 | 删减范围收窄至流程产物 |
+| 4 | 线上环境即测试环境，系统尚未正式投入使用 | 允许破坏性变更，无需数据迁移与向后兼容 |
+
+### 决策 4 的连带事实
+
+- 无真实用户，DynamoDB 遗留孤儿档案与 sandbox 数据可安全清理。
+- 部署流水线名为 "Deploy to Production"、Lambda 别名为 `production`，而审计记录生产发布控制面为 `DEFERRED_OUT_OF_SCOPE`。命名与实际用途不一致，需在后续阶段正名。
+
+### 决策 2 的连带事实
+
+免费档账号无法验证核心卖点，而 Stripe 处于关闭态（api key 为空、live charges 关闭），无法走正常付费流程。后端已具备手动改档能力（`manualOverrideAt` / `manualOverrideBy` / `manualOverrideSource` 字段与管理端订阅审批流），因此测试通路无需改动业务代码。
+
+---
+
+## 三、阶段一：清场与打通测试通路
+
+目标：移除流程产物、清理死代码、建立可验证核心功能的通路与测试基线。
+
+### P1-0 让聊天求助真正派单给老师 ✅ 已完成
+
+执行 P1-1 时发现的阻断缺陷，优先级高于全部删减工作，故插入为 P1-0。
+
+**问题**：会话升级只在会话记录上写 `escalated` / `escalation_status` 标记，从不调用派单。`conversations.py` 虽引入 `teacher_dispatch_service`，但仅用于查询在线人数。而 `GET /teachers/me/help-requests` 只返回已分配给该老师的请求，因此聊天求助对任何老师都不可见。生产表中一条 2026-05-30 的求助已挂起三个月。
+
+**修复**：新增 `teacher_dispatch_service.dispatch_conversation()`，复用 question 通道相同的候选排名与教师围栏/档位绑定条件，将分配写入会话记录。派单为 best-effort，避免计划器故障导致已扣减周额度的升级被拒。
+
+**结果**：学生求助立即返回被分配的老师姓名，老师队列可见该请求。
+
+### P1-1 打通真人老师测试通路 ✅ 已完成
+
+过程中发现并修复了一个真实生产缺陷，详见第五节。
+
+**实际执行记录**：
+
+原以为只需管理端改档，实际遇到两层阻断。
+
+第一层，档位语义与预期不符：`student` 档的 `teacher_support_cases` 为 0，只有 `teacher_supported`（2 次/周）与 `family`（10 次/周）含真人老师。且 `PAID_GRANT#` 授权仅由 Stripe 激活路径写入，管理端审批只更新家长 profile 的 `subscription_tier`，不产生授权，因此手动改档无法解锁真人老师。
+
+第二层，一个真实生产缺陷：DynamoDB 资源层将所有数字返回为 `Decimal`，而 `paid_entitlement_service` 与 `teacher_support_allowance_service` 的 `_positive_integer` 只接受 `int`。`_relationship_proof` 因此拒绝每一个存储的版本号与围栏代次，`get_active_beneficiary_grant` 恒返回 `None`。**即使接通 Stripe 且用户真实付费，真人老师同样会返回 403。** 同仓库的 `checkout_command_repo`、`question_submission_repo` 均已处理 Decimal，此路径遗漏；因 Stripe 从未启用，该代码从未对真实表执行过，而 hermetic 夹具使用 Python int，故全量测试长期通过。
+
+**修复**：两处 `_positive_integer` 按仓库既有约定接受整数值 Decimal，并补充以 Decimal 构造授权的回归测试。新增 `scripts/enable_teacher_support_testing.py` 为测试身份开通权益与教师派单资格（教师需 `availability_status` 与至少一个学科才会被计为可派单）。
+
+### P1-2 删除生产试点与证据生成器
+
+**目标**：移除与产品功能无关的流程产物。
+
+**涉及**：`production_pilot_service.py`（6,359 行）、`external_activation_service`（709）、`bi_observability_service`（648）、`enterprise_stability_service`（341）、`release_evidence_service`（300）、`core_smoke_service`（153），以及 `admin.py` 中对应路由（`/external-activation/*`、`/bi/*`、`/core-smoke`）与其测试文件。
+
+**预计**：约 8,500 行，纠缠度极低。
+
+**验收**：`ruff check` 与全量 `pytest` 通过；`/health` 正常。
+
+### P1-3 删除报告恢复 / 审计留存 / 法务保全
+
+**目标**：移除对零用户系统而言过早建设的合规运维机器。
+
+**涉及**：`report_audit_retention_service`（1,519）、`report_recovery_job_service`（988）、`report_artifact_edit_service`（957）、`report_recovery_service`（347）、`report_edit_service`（313）、`report_artifact_service`（301）、`report_recovery_evidence_service`（241），以及 `admin.py` 中 `/reports/**` 段约 45 条路由。
+
+**保留**：`report_service`（912）与 `jobs/weekly_reports` — 家长周报是产品功能，仅删除其外围恢复 / 留存 / 法务机器。
+
+**预计**：约 4,700 行服务 + 1,900 行路由。
+
+**验收**：家长周报生成与读取端点仍可用；全量测试通过。
+
+### P1-4 删除 support 交接 / SLA / 客户生命周期
+
+**涉及**：`support_destination_service`（919）、`customer_lifecycle_service`（468）、`support_sla_service`（304）、`support_handoff_service`（288）及 `admin.py` 对应路由。
+
+**预计**：约 2,000 行。
+
+**验收**：全量测试通过。
+
+### P1-5 前端删除组织后台与 phase12 mock
+
+**目标**：移除全部为演示数据支撑、无真实后端的表面。
+
+**涉及**：11 条 `organization` 路由（全部 status=demo）、`src/pages/organization/`、`phase12MockData.ts`（450 行）及其 7 个消费 service（`organizationApi`、`learningProfileApi`、`curriculumGraphApi`、`diagnosisApi`、`parentMonthlyReportApi`、`tutorAssignmentApi`、`advancedAnalyticsApi`）。
+
+**验收**：`tsc -b` 与 `eslint` 零错误；`vitest` 通过。
+
+### P1-6 前端删除死依赖与死代码
+
+**涉及**：
+- `aws-amplify`（重包，唯一引用者 `src/lib/api.ts` 自身零引用者）
+- `react-hook-form`、`@hookform/resolvers`（`src/` 内零引用）
+- `src/hooks/useMockChat.ts`（79 行，无引用者）
+- `src/services/demo/demoFallback.ts` 的 `withDemoFallback`（被 19 个 service 包裹，但 `allowDemoFallback` 硬编码 `false`，兜底数据打包却不可达）
+
+**验收**：构建产物体积下降；`tsc -b`、`eslint`、`vitest` 通过。
+
+### P1-7 修复 practice 的 teacher-help 纯桩
+
+**目标**：使练习场景的求助真正进入升级链路。
+
+**现状**：`practice.py` 的 `request_teacher_help` 仅生成 request_id、记一条 usage 事件、返回写死的德语文案。
+
+**做法**：接入与 question 路径一致的升级与派单流程，复用 allowance 准入。
+
+**验收**：练习内求助后，老师队列可见该请求。
+
+### P1-8 建立真实接口冒烟测试基线
+
+**目标**：补上从未存在的 L2 层证据 — 证明接口在真实环境可用，而非函数逻辑正确。
+
+**做法**：新增一层打真实 sandbox 环境的契约冒烟测试，覆盖四角色登录、学生提问、升级真人老师、老师接单与回复、家长查看孩子。与现有 hermetic 单测分离，独立执行。
+
+**优先补空白**：`teacher_applications.py`（8 条路由仅 1 个测试文件）、`adaptive.py`（15 条路由仅 2 个测试文件）。
+
+**验收**：冒烟套件可对 sandbox 环境一键执行并全绿。
+
+---
+
+## 四、阶段二：把实时做成真的
+
+目标：补齐核心卖点所依赖的实时能力。这是整个重构的重心。
+
+### P2-1 WebSocket 基础设施
+
+新增 API Gateway WebSocket API、`$connect` / `$disconnect` / `$default` Lambda handler、CDK 实时栈，接入既有 `WS_CONN#` 连接表。
+
+三端代码已就绪，仅缺中间管道：后端 fanout 服务 479 行、仓储 351 行、前端客户端 `useRealtimeNotifications.ts` 181 行（含心跳、指数退避重连、离线降级）。
+
+同一通道承载：老师回复推送、白板协作同步、老师上线 / 接单提示。
+
+### P2-2 修复派单可靠性
+
+- 部署既有 SQS 消费者 Lambda `jobs/teacher_escalation.py`
+- 新增 EventBridge 定时器自动重派超时任务，替代人工调用
+- 为老师候选查询新增 GSI，替换全表扫描
+
+### P2-3 合并双升级路径
+
+统一 question 与 conversation 两套重复实现为单一链路。
+
+### P2-4 真流式
+
+将伪流式改为真实逐字输出。需改变传输层（Lambda Function URL response streaming 或 WebSocket），并改用 Bedrock 的流式调用。
+
+### P2-5 白板与数学输入
+
+- **Excalidraw**（MIT，可商用嵌入，`@excalidraw/excalidraw` React 组件）
+- **Yjs** CRDT 协作，走 P2-1 的同一条 WebSocket
+- **MathLive** 数学公式输入（自带移动端虚拟数学键盘、语音朗读、ARIA）
+
+**明确排除 tldraw**：其 SDK 自 4.0（2025-09）起为自定义 source-available 授权，生产环境商用需付费并配置 license key。大量资料仍错标为 MIT。
+
+GeoGebra 如需引入，须先单独确认商用授权。
+
+### P2-6 前端信息架构收敛
+
+功能保留，入口收敛。学生顶层入口从十余个降为两个：
+
+```
+/chat                 唯一主界面
+  ├─ 顶部卡片：今日复习 + 打卡状态
+  ├─ 侧栏：历史会话
+  └─ 对话内：升级真人老师 / 打开白板 / 插入公式
+/learn                二级容器（题库 / 练习 / 错题本）
+/teacher/queue        老师端
+/parent               家长端
+/admin                精简后的管理端
+```
+
+### P2-7 移动端补齐
+
+现状：外壳已就绪（`AppLayout` 有独立底部导航、安全区适配、viewport 正确），短板在内容页 — 88 个页面中 29 个零响应式，全项目零触摸事件处理。
+
+阶段一删除管理端页面后压力大幅缓解，此处补齐剩余内容页。
+
+---
+
+## 五、阶段三：题库互动化
+
+### P3-1 FSRS 调度底座
+
+引入 `py-fsrs`（后端）与 `ts-fsrs`（前端），均为 MIT。相同记忆保持率下比传统 SM-2 减少 20–30% 复习量，为 Anki 自 23.10 起的默认算法。
+
+错题本从「越堆越长的列表」变为「今天该复习的 N 题」。
+
+### P3-2 打卡机制
+
+- 打卡判定绑定「完成当日到期复习」，而非「打开应用」或「做任意一题」，以规避 goal drift
+- 补签卡上限 2 张（无上限的补签会使打卡失去意义）
+- 里程碑设于 7 / 30 / 100 / 365 天
+- 可选同伴打卡（对日完成率有显著正向作用）
+
+### P3-3 与真人老师形成闭环
+
+```
+连续 2 次答不上来 → 提示找老师 → 老师讲解
+→ 题目连同讲解注入 FSRS 队列 → 7 天后回访
+```
+
+使真人答疑从一次性消费转为长期记忆闭环。
+
+---
+
+## 六、目标产出
+
+| 指标 | 现状 | 目标 |
+|------|------|------|
+| 后端端点 | 237 | ~170（阶段一后）→ 按需再收敛 |
+| 后端行数 | 96,781 | ~80,000（阶段一后） |
+| 前端路由 | 92 | ~70（阶段一后），顶层入口 2 个 |
+| 学生感知老师回复 | 轮询 | 推送 |
+| 流式 | 伪流式 | 真流式 |
+| 接口真实验证 | 无 | 核心流程全覆盖 |
+
+注：因决策 1、3 保留了计费与学习模块，删减幅度小于早期设想，收敛重心转为入口与导航层级。
+
+---
+
+## 七、风险
+
+1. **删除牵连测试**：后端删除服务时须同步删除其测试文件，否则全量 pytest 会红。每步删除后立即跑 `ruff check` 与 `pytest`。
+2. **allowance 耦合**：`teacher_support_allowance_service` 门控两条升级路径，P1-7 修桩时须复用同一准入器，不得绕过。
+3. **account fence 织入面广**：`account_fence_generation` 织入几乎所有写路径（含教师派单条件），属合规基建，任何阶段均不得删除。
+4. **WebSocket 成本模型**：P2-1 前需确认白板是全量开放还是限定场景，这决定并发规模。
+5. **题库内容缺口**：`mockQuestionBank.ts` 为 657 行假数据。FSRS 算法接入约 2–3 天，真实内容生产可能需数月，两者不可混为一谈。
