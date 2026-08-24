@@ -177,6 +177,37 @@
 
 **验收**：练习内求助后，老师队列可见该请求。
 
+### 阶段一测试基线实际结果 ✅
+
+补上了两层此前完全缺失的证据。
+
+**一、真实环境冒烟：`stoa-backend/scripts/smoke_live_flows.py`**
+
+不能放在 `tests/` 下——conftest 用会话级 fixture 全程禁用 socket。它以真实身份驱动真实 HTTP 面：健康检查、四角色登录（含两个特权客户端）、学生与家长旅程，以及需显式开启的真人老师升级（每次消耗一个周配额）。
+
+```
+STOA_SMOKE_PASSWORD='...' python scripts/smoke_live_flows.py --include-escalation
+→ 12/12 checks passed
+```
+
+首次运行即发现测试学生缺 `primary_subjects`，导致 `GET /students/me/profile` 返回 503。注册路径三个分支都会写入该字段，故属预置脚本的缺口，已补齐。
+
+**二、接口契约守卫：`stoa-frontend/scripts/check-api-contract.mjs`**
+
+把「前端调用比对后端路由清单」自动化，`npm run check:api-contract`。它捕获到一个真实缺陷：记忆摘要调 `/students/me/memory`，实际服务于 `/adaptive/students/me/memory`。
+
+**仍待决策：25 条无后端路由的调用**，分布在 14 个文件。每条需决定「补后端」还是「删前端」：
+
+| 领域 | 调用 |
+|------|------|
+| 支持工单 | `/support/tickets` 系列、`/admin/support/tickets` 系列 |
+| 文件上传 | `POST /files`、`GET /files/{id}`、`POST /files/tutor-credentials` |
+| 管理端 | `/admin/analytics/overview`、`/admin/usage-summary`、`/admin/system-status`、`/admin/help-requests`、`/admin/feedback`、`/admin/support-requests`、`/admin/billing-interest` |
+| 表单提交 | `POST /contact/requests`、`POST /feedback`、`POST /support/requests`、`POST /partnership/interests` |
+| 其他 | `GET /referrals/me`、`GET /students/me/learning-history`、`GET /teachers/me/profile`、`GET /teacher-help/request/{id}`、`GET /parents/me/children/{id}/practice-summary`、`POST /teachers/ai-tools/drafts/{id}/{action}` |
+
+其中文件上传值得注意：后端有完整的 `/files/intents`、分块上传与 `complete` 流程，前端却在调不存在的 `POST /files`，属契约不匹配而非功能缺失。
+
 ### P1-8 建立真实接口冒烟测试基线
 
 **目标**：补上从未存在的 L2 层证据 — 证明接口在真实环境可用，而非函数逻辑正确。
