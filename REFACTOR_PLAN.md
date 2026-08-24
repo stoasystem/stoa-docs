@@ -85,6 +85,23 @@
 
 **修复**：两处 `_positive_integer` 按仓库既有约定接受整数值 Decimal，并补充以 Decimal 构造授权的回归测试。新增 `scripts/enable_teacher_support_testing.py` 为测试身份开通权益与教师派单资格（教师需 `availability_status` 与至少一个学科才会被计为可派单）。
 
+### 阶段一后端删减实际结果
+
+| 指标 | 起点 | 现在 |
+|------|------|------|
+| 已注册端点 | 237 | 202 |
+| `/admin` 端点 | 111 | 76 |
+| 删除代码 | — | 约 22,000 行 |
+
+已删除的服务：`production_pilot_service`、`enterprise_stability_service`、`external_activation_service`、`bi_observability_service`、`core_smoke_service`、`report_audit_retention_service`、`report_artifact_edit_service`、`report_edit_service`、`report_recovery_evidence_service`、`support_destination_service`、`support_sla_service`、`support_handoff_service`、`customer_lifecycle_service`。
+
+删除过程中的两个教训，供后续阶段参考：
+
+1. **按文本块删路由会连带吞掉辅助函数。** 以「装饰器到下一个装饰器」切分会把定义在路由之间的模块级函数一并删除，导致 `_get_report_or_404` 消失、大量保留路由 500。必须用 AST 按函数节点边界删除。
+2. **autouse fixture 会跨删除边界供给保留测试。** `_fenced_artifact_edit_compat` 同时为已删的编辑服务和保留的 `report_recovery_service` 打补丁，删除后 resend 链路失去围栏与邮件桩而 502。删测试前需确认 fixture 的服务对象范围。
+
+两个守卫会强制清单同步，删完必须执行：`python scripts/generate_route_authorization_inventory.py`，并同步 `test_admin_authorization.py` 中的 admin 路由计数断言。
+
 ### P1-2 删除生产试点与证据生成器
 
 **目标**：移除与产品功能无关的流程产物。
