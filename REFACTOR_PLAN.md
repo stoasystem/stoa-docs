@@ -300,6 +300,25 @@ STOA_SMOKE_PASSWORD='...' python scripts/smoke_live_flows.py --include-escalatio
 
 **验证**：生产实跑 `generated: 1, email_sent: 1, failed: 0`，产物落到 S3，家长通过 API 读到完整报告，`questionsAsked` 由 64 更正为 0、`teacherHelpRequests` 为 12（真实升级次数）。周报已纳入冒烟，现为 13/13。
 
+### P1-16 核心 AI 问答：四层缺陷叠加，学生一句话也问不出去 ✅
+
+起点只是「`POST /conversations` 带 `initialMessage` 返回 500」这条待修项。顺着查下去发现的是更严重的事实：**生产环境发送任何聊天消息都返回 503**，本项目最核心的 AI 问答从未可用。之所以一直没被发现，是因为冒烟只创建会话、从不发消息。
+
+四层缺陷，每修好一层才露出下一层：
+
+| # | 缺陷 | 为什么测试发现不了 |
+|---|---|---|
+| 1 | 配额条件里写了 `:next<=:limit`。DynamoDB 要求比较运算符左侧是文档路径，两个占位符相比会在求值前就被拒绝 | 表替身从不解析表达式 |
+| 2 | 事务经由资源表自带的客户端发送，而该客户端会把已是 wire format 的数据**再序列化一次**，主键变成 Map 被拒 | 替身从不二次序列化 |
+| 3 | Lambda 角色只有 `bedrock:InvokeModel`，没有 `CountTokens`。而 token 准入在调用前计数且失败即拒绝 | 权限不在单测范围 |
+| 4 | 周次从存储的记录重建为 pydantic 模型，该模型只接受 int，而 DynamoDB 返回 Decimal。用量记录失败 → 状态到不了 observed → 收尾拒绝未观测的记录 | 替身回读的是它收到的 Python int |
+
+第 1、2 条的根因在同一个仓库函数里；第 2 条 `account_deletion_repo` 早已因同样原因改用裸客户端，`attachment_repo` 遗漏。第 3 条与周报的 `ListBucketVersions` 同类：**授权按「正常路径需要什么」配置，漏掉了失败即拒绝的前置检查**。
+
+**方法论教训**：第 4 条属于 Decimal 类问题，但 P1-10 的排查没能覆盖——当时我只扫描 `isinstance(x, int)` 形式的判定，而这里是 pydantic 模型校验。检测手段的形状决定了能发现什么。因此本轮的守卫改为从**替身的真实性**入手：让 allowance 表替身像真实 DynamoDB 一样回读 Decimal，移除修复后有 4 个测试失败。同理新增两个守卫：拒绝「两个占位符相比」的条件表达式，拒绝把 wire format 交给会二次序列化的客户端；基础设施侧新增断言——任何授予 `InvokeModel` 的语句必须同时授予 `CountTokens`。
+
+**冒烟补强**：新增「学生向助教提问」一项，实际校验有回答返回。现为 14/14。
+
 ### 本轮新发现的待办
 
 - **前端类型检查此前形同虚设**：项目用 `tsc -b`（带 project references），而我先前用 `npx tsc --noEmit` 校验，实际不检查任何文件、恒为通过。已改用 `npm run typecheck`，并据此发现并修复了一批真实类型错误。
