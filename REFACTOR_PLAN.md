@@ -319,6 +319,28 @@ STOA_SMOKE_PASSWORD='...' python scripts/smoke_live_flows.py --include-escalatio
 
 **冒烟补强**：新增「学生向助教提问」一项，实际校验有回答返回。现为 14/14。
 
+### P2-1 回到产品主线：先看真实界面 ✅
+
+用浏览器以学生身份登录生产环境逐页截图，而不是读代码猜测。发现的问题按严重程度：
+
+**练习与题库整页 500**。60 道存量题目缺 `challenge_version` 与 `challenge_content_hash`——它们是内容版本化方案引入前灌入的，而读取端严格校验、失败即抛错。学生看到的是「Practice is unavailable right now」。校验本身是对的，该补的是数据，已写回填脚本 `scripts/backfill_challenge_versions.py`（版本由内容推导，只写该行本已隐含的值，已版本化的行拒绝改动）并执行。测试之所以发现不了，是因为每个测试都先调用 `version_challenge` 再构造夹具，而存量数据从来没有经过这一步。
+
+**每个会话都叫「Mathematics – 9」**。学生的会话列表是一列一模一样的条目，无法分辨。现改为用第一个问题作标题，两条创建路径都覆盖；重命名是条件写入，学生自己改过的标题不会被覆盖；且为尽力而为——标题的价值低于刚刚送达的答案。列表行原本还在标题下重复一遍「Mathematics · 9」，已删除，现在读起来是标题加摘要。
+
+**手机底部标签被截断**。五个标签挤在 390px 宽度里，「Ask a question」显示成「Ask a que…」。现按语言配短标签（Ask / Classroom / History…），完整标签保留为无障碍属性。
+
+**`[object Object]`**。学科下方直接渲染了年级对象数组——前端类型声明为 `string[]`，后端返回的是带 `label` 的对象。
+
+**又一处编造数据**：练习结果页在没有完成记录时，用一份虚构的完成结果兜底，把编造的分数当作学生自己的成绩展示。已改为如实说明「还没有可总结的练习」。随之 907 行练习 mock 数据失去全部使用者，已删除。
+
+### 待决策：题库（Practice Library）整个是假的
+
+`services/questionBank/questionBankApi.ts` **不发起任何 HTTP 请求**，88 行代码全部返回本地 mock，背后是 657 行编造数据。学生在 Library 里看到的「Linear Equations Basics，10 题已完成 6 题」是虚构的，答题不会被保存，进度不存在。学生仪表盘的部分统计（`dashboardStats`、`learningProgress`、`recentQuestions`、`teacherFeedback`）同样来自 mock。
+
+契约守卫抓不到这一类：它比对的是「前端调用的路由后端是否存在」，而这里根本不调用后端——**守卫的形状决定了它能发现什么**，与 P1-16 的教训同源。
+
+后端其实已具备可支撑的能力（本轮修好后可用）：`/practice/curriculum/catalog`、`/lessons/{id}`、`/exercises`（60 题）、`/challenges/{id}/answer`、`/progress`、`/practice/mistakes`、`/practice/hints`。题库 UI 需要的「题集、题目、作答、结果、错题」与之有实质对应关系，因此可以把 Library 接到真实课程数据上，而不是另建一套后端。这也正是「保留题库并做成互动/连续打卡式学习」的前置条件。
+
 ### 本轮新发现的待办
 
 - **前端类型检查此前形同虚设**：项目用 `tsc -b`（带 project references），而我先前用 `npx tsc --noEmit` 校验，实际不检查任何文件、恒为通过。已改用 `npm run typecheck`，并据此发现并修复了一批真实类型错误。
