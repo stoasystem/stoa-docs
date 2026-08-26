@@ -417,6 +417,18 @@ STOA_SMOKE_PASSWORD='...' python scripts/smoke_live_flows.py --include-escalatio
 
 **教训**：代理指标（有没有某个类名）会指向不存在的问题，也会漏掉真实问题；应当直接测量症状本身。
 
+### P2-6 信息架构收敛 ✅
+
+学生的顶层入口从 7 个降到 3 个：**Ask a question**（`/chat`）、**Learn**（`/learn`）、**Profile**。
+
+促成这次收敛的是一处真实重复：上一轮把题库接到课程数据后，`/practice` 和 `/question-bank` 读的是同一批 `/practice/curriculum/*`——导航上两扇门通向同一个房间。现在它们是 `/learn` 下的标签：Exercises / Guided path / Mistakes / Progress。
+
+仪表盘的日常循环（打卡、未完成的课、待复习错题）移到了 `/chat` 空会话上方的一条窄栏——学生本来就从这里开始。它「接下来学什么」的部分（推荐、薄弱知识点）并入 Progress 标签，页面本身连同 6 个仅供它组合的卡片一并删除。
+
+**顺带发现 Online Classroom 全是假的**：31 个文件、2682 行，服务层零 HTTP 调用，全部由 mock 支撑。它列为「已完成」的课堂从未发生过，而这些编造记录出现在学习历史、学生仪表盘和**家长仪表盘**上——家长那处最具误导性。已移出导航并断开假数据；功能代码保留，等有真实后端时再启用。另外 `/assistant` 是第二个聊天页（页面里自称对方为「Classic UI」），无人链接，已重定向到 `/chat`。
+
+旧路径全部重定向（`/dashboard`→`/chat`，`/question-bank`→`/learn`，`/practice`→`/learn/path`，`/question-bank/mistakes`→`/learn/mistakes`，`/learning-history`→`/learn/progress`，`/assistant`→`/chat`），书签不会失效。已在真实环境逐条验证：四个标签均渲染真实内容，今日条显示「2 day streak / Continue Brüche multiplizieren / Review 3 mistakes」，390px 下无溢出，无控制台报错。
+
 ### 本轮新发现的待办
 
 - **前端类型检查此前形同虚设**：项目用 `tsc -b`（带 project references），而我先前用 `npx tsc --noEmit` 校验，实际不检查任何文件、恒为通过。已改用 `npm run typecheck`，并据此发现并修复了一批真实类型错误。
