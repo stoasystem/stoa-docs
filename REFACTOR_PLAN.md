@@ -429,6 +429,20 @@ STOA_SMOKE_PASSWORD='...' python scripts/smoke_live_flows.py --include-escalatio
 
 旧路径全部重定向（`/dashboard`→`/chat`，`/question-bank`→`/learn`，`/practice`→`/learn/path`，`/question-bank/mistakes`→`/learn/mistakes`，`/learning-history`→`/learn/progress`，`/assistant`→`/chat`），书签不会失效。已在真实环境逐条验证：四个标签均渲染真实内容，今日条显示「2 day streak / Continue Brüche multiplizieren / Review 3 mistakes」，390px 下无溢出，无控制台报错。
 
+### P2-7 题库互动闭环：间隔重复 ✅
+
+在此之前，错题本把学生答错过的每一道题永久平铺出来，谁也不决定「什么时候该再看一遍」——错一次和错五次长得一样，一个月前答对的题再也不会回来。而且它把正确答案直接印在题目旁边，等于复习前先给答案。
+
+现在**作答即调度**。每道题为每个学生记住两件事：记忆能维持多久（stability）、对这个学生有多难（difficulty）；当模型算出的回忆概率跌到九成时，题目回来。答对把间隔推开——3 天、11 天、35 天、101 天、270 天；答错把间隔塌回当前这一轮，并收回已经赚到的部分。
+
+调度器是 FSRS，刻意不碰存储和时钟，因此它的承诺可以被精确测试：间隔递增、失误有代价、当天重刷比隔天再来赚得少。stability 和 difficulty 以 `Decimal` 存储（DynamoDB 拒收 float，这个仓库为此付过代价），并有单测直接断言存进去的不是 float。调度失败不能让学生丢掉作答（作答已经落库），因此是尽力而为；已下架的题不会拿来复习。
+
+**冒烟测试抓到一个设计缺陷**：我最初给答错的题设了 10 分钟重学延迟，但这里一节课只有三道题、两分钟做完，学生根本等不到那道错题。改为立即到期，靠「最早到期在前」的排序把刚错的题排到本轮末尾，再由同日衰减规则压住重复作答的白捡。
+
+**界面复查又抓到一个**：答错后直接显示解析，而解析里写着答案，紧挨着「再试一次」——这次重答是白送的，还会推进调度。现已改为答错只给提示式反馈，解析留到答对之后，并有单测锁定。
+
+数据落在 `PK=REVIEW#{student_id}` / `SK=CARD#{challenge_id}`，已登记进账号删除的归属判定。共 25 个后端单测 + 6 个前端单测，线上冒烟 16/16。
+
 ### 本轮新发现的待办
 
 - **前端类型检查此前形同虚设**：项目用 `tsc -b`（带 project references），而我先前用 `npx tsc --noEmit` 校验，实际不检查任何文件、恒为通过。已改用 `npm run typecheck`，并据此发现并修复了一批真实类型错误。
