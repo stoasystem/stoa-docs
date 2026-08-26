@@ -459,6 +459,20 @@ STOA_SMOKE_PASSWORD='...' python scripts/smoke_live_flows.py --include-escalatio
 
 **待决策**：应用域名里还留着 `/pricing`、`/for-parents`、`/how-it-works`、`/for-schools`、`/for-tutoring-centers`、`/teacher-support`、`/qa`、`/contact` 共 8 个营销页（464 行页面 + 600 行组件），登录页顶部的营销导航就指向它们。按「应用域名就是应用」的方向，这些也该交给 `stoaedu.ch`，但需要先确认那边是否已有对应内容。
 
+### P2-10 应用域名清空营销 ✅
+
+删掉了 8 个营销页（how-it-works / for-parents / teacher-support / pricing / qa / contact / for-schools / for-tutoring-centers）及其专用组件，登录页顶部只留 logo、语言切换和入口按钮。营销全部交给 `stoaedu.ch`。
+
+**其中一个不只是营销**：家长碰到付费功能时看到的升级提示，全部指向 `/pricing`——那页写着硬编码的价格且无法收款。现已改指 `/billing`（能走结账）。注意：`/billing` 的套餐列表**同样是硬编码的**（`getBillingPlans()` 直接返回前端常量，不调后端），而后端 `/parents/me/subscription` 其实返回真实档位与限额——这个漂移风险仍待处理。
+
+### P2-11 家长计费页 503：Decimal 判定第三次咬人 ✅
+
+删营销页时顺带发现家长计费页一直显示「暂时不可用」。查因过程本身暴露了第一个缺陷：**处理器把异常吞掉直接返回 503，什么都不记**，谁也无法诊断。先补上日志，才看到真正的原因。
+
+原因是老问题：`type(value) is not int` 拒绝 `Decimal`，而 DynamoDB 返回的所有数字都是 `Decimal`。修掉 `_required_positive_int` 后，**同一个错误下移了一帧**——`_billing_exact_count` 用同样的写法检查 grant version。第二次修的是共用函数本身，覆盖它的 25 个调用点，而不是单个调用。修完接口从 503 变 200。
+
+**教训**：这是这个仓库第三次为同一个比较付代价（P1-1b、P1-10、本次）。前两次靠肉眼审计「收敛」，仍然漏掉了这两处。`type(x) is not int` 在全仓还有几十处，其中读自 DynamoDB 的都是同类风险——**待办：换成能自动发现的手段（共用解析函数 + 守卫），不要再靠人眼扫**。
+
 ### 本轮新发现的待办
 
 - **前端类型检查此前形同虚设**：项目用 `tsc -b`（带 project references），而我先前用 `npx tsc --noEmit` 校验，实际不检查任何文件、恒为通过。已改用 `npm run typecheck`，并据此发现并修复了一批真实类型错误。
