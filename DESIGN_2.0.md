@@ -4,7 +4,7 @@
 > **创建日期：** 2026-08-04  
 > **状态：** 部分实施中 — Sprint 任务完成 14/40（35%）  
 > **最后核对：** 2026-08-10（逐条比对代码实际状态，非文档勾选）  
-> **前置文档：** [PLAN.md](./PLAN.md) · [PRD.md](./PRD.md) · [ADR.md](./ADR.md) · [PROJECT_SLIM_PLAN.md](../PROJECT_SLIM_PLAN.md) · [SPRINT_PLAN_2.0.md](./SPRINT_PLAN_2.0.md)
+> **前置文档：** [PLAN.md](./PLAN.md) · [PRD.md](./PRD.md) · [ADR.md](./ADR.md) · [PROJECT_SLIM_PLAN.md](./PROJECT_SLIM_PLAN.md) · [SPRINT_PLAN_2.0.md](./SPRINT_PLAN_2.0.md)
 
 ---
 
@@ -89,7 +89,7 @@ Cognito → API → UI 链路上验证**。后续任何功能开发前应先补�
 
 ## 二、瘦身先行：2.0 启动前置条件
 
-> 详细执行步骤见 [PROJECT_SLIM_PLAN.md](../PROJECT_SLIM_PLAN.md)
+> 详细执行步骤见 [PROJECT_SLIM_PLAN.md](./PROJECT_SLIM_PLAN.md)
 
 ### ✅ 已完成（P0）
 

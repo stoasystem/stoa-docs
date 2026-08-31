@@ -19,6 +19,11 @@ STOA 学习平台设计与开发文档中心。
 | [PLAN.md](./PLAN.md) | 开发计划 — Sprint 规划、当前进度快照、任务拆解 | 2026-05-28 |
 | [ADR.md](./ADR.md) | 架构决策记录（9 条） | 2026-05-28 |
 | [DEPLOYMENT.md](./DEPLOYMENT.md) | AWS 部署指南（CI/CD + 手动部署） | 2026-05-28 |
+| [REFACTOR_PLAN.md](./REFACTOR_PLAN.md) | 产品重构计划 | 2026-08-27 |
+| [DESIGN_2.0.md](./DESIGN_2.0.md) | 开发设计 2.0 | 2026-08-10 |
+| [SPRINT_PLAN_2.0.md](./SPRINT_PLAN_2.0.md) | 2.0 详细开发计划 | 2026-08-10 |
+| [PROJECT_SLIM_PLAN.md](./PROJECT_SLIM_PLAN.md) | 项目瘦身规划 — 已知技术债清单 | 2026-08-04 |
+| [PHASE476-28_PAYMENT_TEST_REPORT.md](./PHASE476-28_PAYMENT_TEST_REPORT.md) | 支付模块测试报告（Stripe 测试模式） | 2026-07-30 |
 
 ## 代码仓库
 
