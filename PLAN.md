@@ -604,11 +604,27 @@ Unit Tests（pytest）
 | Bedrock Claude Haiku 回答质量不达标 | 中 | 高 | 准备 prompt 优化迭代方案；预留切换 Sonnet 的开关 |
 | Rekognition OCR 对手写题目识别率低 | 高 | 中 | 允许学生手动修正 OCR 结果；Phase 2 切 Textract |
 | DynamoDB 单表设计出现访问瓶颈 | 低 | 中 | GSI 按需扩展；热点 Key 用 Hash 分散 |
-| Lambda 冷启动影响体验 | 中 | 低 | 关键路由预置并发（约 $3/月）；监控 P99 延迟 |
+| Lambda 冷启动影响体验 | 中 | 低 | 关键路由预置并发（约 $3/月）；监控 P99 延迟——**2026-09-02 已在 `stoa-infra` 落地**：`api_production_alias` provisioned concurrency=1、内存 512→1024MB、开启 Lambda Insights |
 | AWS Bedrock eu-central-2 不支持 Claude Haiku | 中 | 高 | 切换 Amazon Nova Lite（同 Region）；或申请 Bedrock 模型访问权限 |
 | 家长付费意愿不及预期 | 中 | 高 | 内测阶段免费赠送，收集真实反馈，快速迭代 |
 | 老师接管响应慢（> 4小时） | 中 | 高 | SLA 承诺；多个老师轮值；SQS 消息可见性超时自动重分配 |
 | 内容安全（学生提交不当内容） | 低 | 高 | Bedrock Guardrails 过滤；管理员内容审核工具 |
+
+### 11.1 登录性能预算（BUG-008，2026-09-02）
+
+`页面Bug报告_2026-08-28.docx` 记录的基线：提交登录到路由跳转完成中位数 ~2.81s，到 `/chat`
+首屏可用中位数 ~3.89s（Chrome + 学生测试账号，4 次重复）。此前的修复只加了埋点和 loading 态，
+未做实际优化，且埋点本身因后端缺少 `/analytics/events` 路由而从未真正上报（已在本次一并修复）。
+
+本次改动（详见 `stoa-infra/stacks/api_stack.py`、`monitoring_stack.py`、
+`stoa-frontend/src/hooks/auth/useLoginMutation.ts`）：Lambda 预置并发 + 内存提升消除冷启动，
+前端登录成功后提前 `prefetchQuery` 会话列表，CloudWatch 新增 API Gateway 延迟图表并将 p99
+告警阈值从 10s 收紧到 3s。
+
+**性能预算**：登录提交到首屏可用 p50 < 2s，p95 < 3.5s。需部署后用真实
+`login_submitted → login_authenticated → login_first_screen_ready` 埋点数据验证是否达标；未达标则
+按该数据判断瓶颈在 Cognito 认证阶段还是首屏渲染阶段，再决定是否需要拆分 Lambda 或加第二级
+provisioned concurrency。
 
 ---
 
