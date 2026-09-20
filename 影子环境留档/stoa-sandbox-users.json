@@ -1,0 +1,149 @@
+{
+    "Users": [
+        {
+            "Username": "bd14c990-2071-70c5-7969-892e72b0d4f1",
+            "Attributes": [
+                {
+                    "Name": "email",
+                    "Value": "sandbox.student1@stoaedu.ch"
+                },
+                {
+                    "Name": "email_verified",
+                    "Value": "true"
+                },
+                {
+                    "Name": "custom:subscription_tier",
+                    "Value": "free_trial"
+                },
+                {
+                    "Name": "custom:role",
+                    "Value": "student"
+                },
+                {
+                    "Name": "sub",
+                    "Value": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+                }
+            ],
+            "UserCreateDate": "2026-07-30T09:21:30.336000+08:00",
+            "UserLastModifiedDate": "2026-07-30T09:21:30.841000+08:00",
+            "Enabled": true,
+            "UserStatus": "CONFIRMED"
+        },
+        {
+            "Username": "4d24f960-a011-7046-4d2c-362b95315cde",
+            "Attributes": [
+                {
+                    "Name": "email",
+                    "Value": "sandbox.parent@stoaedu.ch"
+                },
+                {
+                    "Name": "email_verified",
+                    "Value": "true"
+                },
+                {
+                    "Name": "custom:subscription_tier",
+                    "Value": "free_trial"
+                },
+                {
+                    "Name": "custom:role",
+                    "Value": "parent"
+                },
+                {
+                    "Name": "sub",
+                    "Value": "4d24f960-a011-7046-4d2c-362b95315cde"
+                }
+            ],
+            "UserCreateDate": "2026-07-30T09:21:37.619000+08:00",
+            "UserLastModifiedDate": "2026-07-30T09:21:38.138000+08:00",
+            "Enabled": true,
+            "UserStatus": "CONFIRMED"
+        },
+        {
+            "Username": "0da4c9c0-e0b1-7012-6386-5bce1532eae8",
+            "Attributes": [
+                {
+                    "Name": "email",
+                    "Value": "sandbox.student3@stoaedu.ch"
+                },
+                {
+                    "Name": "email_verified",
+                    "Value": "true"
+                },
+                {
+                    "Name": "custom:subscription_tier",
+                    "Value": "free_trial"
+                },
+                {
+                    "Name": "custom:role",
+                    "Value": "student"
+                },
+                {
+                    "Name": "sub",
+                    "Value": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+                }
+            ],
+            "UserCreateDate": "2026-07-30T09:21:35.260000+08:00",
+            "UserLastModifiedDate": "2026-07-30T09:21:35.731000+08:00",
+            "Enabled": true,
+            "UserStatus": "CONFIRMED"
+        },
+        {
+            "Username": "4dc469a0-f021-7017-7539-bdc79014ec00",
+            "Attributes": [
+                {
+                    "Name": "email",
+                    "Value": "sandbox.admin@stoaedu.ch"
+                },
+                {
+                    "Name": "email_verified",
+                    "Value": "true"
+                },
+                {
+                    "Name": "custom:subscription_tier",
+                    "Value": "free_trial"
+                },
+                {
+                    "Name": "custom:role",
+                    "Value": "admin"
+                },
+                {
+                    "Name": "sub",
+                    "Value": "4dc469a0-f021-7017-7539-bdc79014ec00"
+                }
+            ],
+            "UserCreateDate": "2026-07-30T09:21:27.346000+08:00",
+            "UserLastModifiedDate": "2026-07-30T09:21:27.920000+08:00",
+            "Enabled": true,
+            "UserStatus": "CONFIRMED"
+        },
+        {
+            "Username": "4d6499f0-60f1-70a4-6d31-5764ab49525c",
+            "Attributes": [
+                {
+                    "Name": "email",
+                    "Value": "sandbox.student2@stoaedu.ch"
+                },
+                {
+                    "Name": "email_verified",
+                    "Value": "true"
+                },
+                {
+                    "Name": "custom:subscription_tier",
+                    "Value": "free_trial"
+                },
+                {
+                    "Name": "custom:role",
+                    "Value": "student"
+                },
+                {
+                    "Name": "sub",
+                    "Value": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+                }
+            ],
+            "UserCreateDate": "2026-07-30T09:21:32.836000+08:00",
+            "UserLastModifiedDate": "2026-07-30T09:21:33.372000+08:00",
+            "Enabled": true,
+            "UserStatus": "CONFIRMED"
+        }
+    ]
+}

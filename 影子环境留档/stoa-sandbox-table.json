@@ -1,0 +1,1442 @@
+{
+    "Items": [
+        {
+            "command_state": {
+                "S": "provider_session_open"
+            },
+            "provider_effect_status": {
+                "S": "session_attached"
+            },
+            "expiration_effect_status": {
+                "S": "not_started"
+            },
+            "lease_generation": {
+                "N": "1"
+            },
+            "lease_expires_at": {
+                "N": "1785377331"
+            },
+            "price_id": {
+                "S": "price_1TyZtVCcGDzjO2L51eTCawV6"
+            },
+            "provider_key_digest": {
+                "S": "809f6a93e2b8ca443eec609a6ba949351861a5b821ee93059c69ca9d164b7fe1"
+            },
+            "SK": {
+                "S": "COMMAND"
+            },
+            "idempotency_key_digest": {
+                "S": "2fba94411373c5fa16dee50f04ab79598382cc1b55643452c5eb814ea55d3419"
+            },
+            "account_fence_generation": {
+                "N": "1"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "provider_session_id_digest": {
+                "S": "f194964e07b1b7bb82f229bdc97e7bc406d20c9836dc862b5357e42d266a9387"
+            },
+            "plan_id": {
+                "S": "student"
+            },
+            "environment": {
+                "S": "staging"
+            },
+            "beneficiary_ids": {
+                "L": [
+                    {
+                        "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+                    }
+                ]
+            },
+            "entity_type": {
+                "S": "checkout_command"
+            },
+            "created_at": {
+                "S": "2026-07-30T02:08:21.499075+00:00"
+            },
+            "provider_session_url": {
+                "S": "https://checkout.stripe.com/c/pay/cs_test_a1LPR7h4EXoAjXYoPjBqNEg0tAzl4Pxp2RcqhazmWXIIQYuKzdOW2E8iH5#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWnFgdnFaMDRRfF91R0ZmQkF%2Fb0o3STBxVWNvY0FBSXNnMnB%2FfE41XHE0YkJAd29vUWdhSUR%2FNUcwV2JNVDRNPUlMQ2B9R2xBd3NMYnJOdmM1YGBddEJxX292Nmg9fWk1NVNsNmFvQlRuJyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl"
+            },
+            "lease_owner": {
+                "S": "checkout-worker-1e57648d1dad441f8d1347ddba9e0d23"
+            },
+            "checkout_ref": {
+                "S": "co_2EacI_Dc87gjU42XbCxBm7dPleqPGFII2vdrvcKJTQs"
+            },
+            "updated_at": {
+                "S": "2026-07-30T02:08:22+00:00"
+            },
+            "provider_session_id": {
+                "S": "cs_test_a1LPR7h4EXoAjXYoPjBqNEg0tAzl4Pxp2RcqhazmWXIIQYuKzdOW2E8iH5"
+            },
+            "command_id": {
+                "S": "checkout-7ec004a35cde9df28c71fc457b18f47734ad9ea0b8fbe8fdf6923ea839fbe279"
+            },
+            "price_catalog_version": {
+                "N": "1"
+            },
+            "plan_version": {
+                "N": "1"
+            },
+            "command_version": {
+                "N": "3"
+            },
+            "intent_fingerprint": {
+                "S": "95ba19259e1f49bd7d779a6f564d4e3a2c6101b9fe7fd9aab004b0c525bd92f2"
+            },
+            "provider_key_version": {
+                "N": "1"
+            },
+            "PK": {
+                "S": "CHECKOUT_COMMAND#checkout-7ec004a35cde9df28c71fc457b18f47734ad9ea0b8fbe8fdf6923ea839fbe279"
+            },
+            "schema_version": {
+                "S": "checkout_command.v1"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_event_inbox"
+            },
+            "semantic_identity": {
+                "S": "079d0c4460c45df0a5afadef95c81fe44e978cc081fc61f2145f041939f835e3"
+            },
+            "provider_object_id_digest": {
+                "S": "7110de1bfcaffa208add9c226d66c226dfae24a7b5455a13229ff3595a29add7"
+            },
+            "SK": {
+                "S": "EVENT"
+            },
+            "provider_event_id_digest": {
+                "S": "12e7f9623dad3416d51c6db188d5c9978d8ebb13f14a7f55b27629cab47998be"
+            },
+            "PK": {
+                "S": "BILLING_EVENT_INBOX#12e7f9623dad3416d51c6db188d5c9978d8ebb13f14a7f55b27629cab47998be"
+            },
+            "object_version": {
+                "N": "1785462760"
+            },
+            "schema_version": {
+                "S": "billing_event_inbox.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-31T01:52:40+00:00"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_semantic_dedupe"
+            },
+            "semantic_identity": {
+                "S": "079d0c4460c45df0a5afadef95c81fe44e978cc081fc61f2145f041939f835e3"
+            },
+            "provider_object_id_digest": {
+                "S": "7110de1bfcaffa208add9c226d66c226dfae24a7b5455a13229ff3595a29add7"
+            },
+            "SK": {
+                "S": "DEDUPE"
+            },
+            "PK": {
+                "S": "BILLING_SEMANTIC#079d0c4460c45df0a5afadef95c81fe44e978cc081fc61f2145f041939f835e3"
+            },
+            "object_version": {
+                "N": "1785462760"
+            },
+            "schema_version": {
+                "S": "billing_semantic_dedupe.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-31T01:52:40+00:00"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_semantic_dedupe"
+            },
+            "semantic_identity": {
+                "S": "06902a274e5587234b0d4598fed33aed725a807eb1e984c120c25cf149e0dae2"
+            },
+            "provider_object_id_digest": {
+                "S": "ab50cdfb1e1a69b8b400c08e01d4c75dfdc86b384ea6d6fb1bad79580f367c0b"
+            },
+            "SK": {
+                "S": "DEDUPE"
+            },
+            "object_version": {
+                "N": "1785377159"
+            },
+            "PK": {
+                "S": "BILLING_SEMANTIC#06902a274e5587234b0d4598fed33aed725a807eb1e984c120c25cf149e0dae2"
+            },
+            "schema_version": {
+                "S": "billing_semantic_dedupe.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-30T02:05:59+00:00"
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-07-30T01:21:28+00:00"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "entity_type": {
+                "S": "account_fence"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:28+00:00"
+            },
+            "generation": {
+                "N": "1"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "ACCOUNT_FENCE"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "schema_version": {
+                "S": "account-fence.v1"
+            }
+        },
+        {
+            "subject": {
+                "S": "4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "user_id": {
+                "S": "4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "entity_type": {
+                "S": "user_identity_inventory"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:28+00:00"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "binding_pk": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "SK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#4dc469a0-f021-7017-7539-bdc79014ec00"
+            }
+        },
+        {
+            "version": {
+                "N": "1"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:28+00:00"
+            },
+            "entity_type": {
+                "S": "user_profile"
+            },
+            "registration_role": {
+                "S": "admin"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "email": {
+                "S": "sandbox.admin@stoaedu.ch"
+            },
+            "name": {
+                "S": "Sandbox Admin"
+            },
+            "account_status": {
+                "S": "active"
+            },
+            "updated_at": {
+                "S": "2026-07-30T01:21:28+00:00"
+            },
+            "user_id": {
+                "S": "4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "role": {
+                "S": "admin"
+            },
+            "registration_command": {
+                "S": "public_self_service"
+            },
+            "SK": {
+                "S": "PROFILE"
+            },
+            "subscription_tier": {
+                "S": "free_trial"
+            },
+            "PK": {
+                "S": "USER#4dc469a0-f021-7017-7539-bdc79014ec00"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_semantic_dedupe"
+            },
+            "semantic_identity": {
+                "S": "b3ee147c7bb8194d39077b9afd9fc4b0b9ff6f761cb18a96b4105bd6cbc97f1d"
+            },
+            "provider_object_id_digest": {
+                "S": "3915af5b4ed1ea659db0a7446488b86449e4f570ba8327a0919e9efc939eacbd"
+            },
+            "SK": {
+                "S": "DEDUPE"
+            },
+            "PK": {
+                "S": "BILLING_SEMANTIC#b3ee147c7bb8194d39077b9afd9fc4b0b9ff6f761cb18a96b4105bd6cbc97f1d"
+            },
+            "object_version": {
+                "N": "1785463702"
+            },
+            "schema_version": {
+                "S": "billing_semantic_dedupe.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-31T02:08:22+00:00"
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-07-30T01:21:35+00:00"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "entity_type": {
+                "S": "account_fence"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:35+00:00"
+            },
+            "generation": {
+                "N": "1"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "ACCOUNT_FENCE"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "schema_version": {
+                "S": "account-fence.v1"
+            }
+        },
+        {
+            "subject": {
+                "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "user_id": {
+                "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "entity_type": {
+                "S": "user_identity_inventory"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:35+00:00"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "binding_pk": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "SK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            }
+        },
+        {
+            "created_at": {
+                "S": "2026-07-30T01:21:40+00:00"
+            },
+            "binding_status": {
+                "S": "confirmed"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "PARENT#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "student_id": {
+                "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "PK": {
+                "S": "USER#0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "relationship": {
+                "S": "child"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "version": {
+                "N": "1"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:35+00:00"
+            },
+            "entity_type": {
+                "S": "user_profile"
+            },
+            "grade": {
+                "S": "8"
+            },
+            "registration_role": {
+                "S": "student"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "email": {
+                "S": "sandbox.student3@stoaedu.ch"
+            },
+            "name": {
+                "S": "Sandbox Student 3"
+            },
+            "language": {
+                "S": "de"
+            },
+            "account_status": {
+                "S": "active"
+            },
+            "updated_at": {
+                "S": "2026-07-30T01:21:35+00:00"
+            },
+            "user_id": {
+                "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "role": {
+                "S": "student"
+            },
+            "registration_command": {
+                "S": "public_self_service"
+            },
+            "SK": {
+                "S": "PROFILE"
+            },
+            "subscription_tier": {
+                "S": "free_trial"
+            },
+            "PK": {
+                "S": "USER#0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "school_system": {
+                "S": "Lehrplan 21"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_event_inbox"
+            },
+            "semantic_identity": {
+                "S": "efc9b9ecd929f35d864943db828329436eba6385a1a10397fd629a21c95ff98b"
+            },
+            "provider_object_id_digest": {
+                "S": "6174d4cf7cd5889370101b0c369e5501044221cb8b993db6401643ddda3abd73"
+            },
+            "SK": {
+                "S": "EVENT"
+            },
+            "provider_event_id_digest": {
+                "S": "fc63beb45a98c57a73a6b432934b64c385acfb549f6f3d5e31fc6bb4829aaeb0"
+            },
+            "object_version": {
+                "N": "1785462607"
+            },
+            "PK": {
+                "S": "BILLING_EVENT_INBOX#fc63beb45a98c57a73a6b432934b64c385acfb549f6f3d5e31fc6bb4829aaeb0"
+            },
+            "schema_version": {
+                "S": "billing_event_inbox.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-31T01:50:07+00:00"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_semantic_dedupe"
+            },
+            "semantic_identity": {
+                "S": "aa2b6c02766a805f90deda295637f477d72cd1cf44174d8c393fd9fc85a57064"
+            },
+            "SK": {
+                "S": "DEDUPE"
+            },
+            "provider_object_id_digest": {
+                "S": "d3f70fd307e13a1c22ebe3fcbed2794c6e827e9dbc032bbfcbe721ac1e7646de"
+            },
+            "PK": {
+                "S": "BILLING_SEMANTIC#aa2b6c02766a805f90deda295637f477d72cd1cf44174d8c393fd9fc85a57064"
+            },
+            "object_version": {
+                "N": "1785377186"
+            },
+            "schema_version": {
+                "S": "billing_semantic_dedupe.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-30T02:06:26+00:00"
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-07-30T01:21:31+00:00"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "entity_type": {
+                "S": "account_fence"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:31+00:00"
+            },
+            "generation": {
+                "N": "1"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "ACCOUNT_FENCE"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "schema_version": {
+                "S": "account-fence.v1"
+            }
+        },
+        {
+            "subject": {
+                "S": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "user_id": {
+                "S": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "entity_type": {
+                "S": "user_identity_inventory"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:31+00:00"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "binding_pk": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "SK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#bd14c990-2071-70c5-7969-892e72b0d4f1"
+            }
+        },
+        {
+            "created_at": {
+                "S": "2026-07-30T01:21:39+00:00"
+            },
+            "binding_status": {
+                "S": "confirmed"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "PARENT#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "student_id": {
+                "S": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "PK": {
+                "S": "USER#bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "relationship": {
+                "S": "child"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "version": {
+                "N": "1"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:31+00:00"
+            },
+            "entity_type": {
+                "S": "user_profile"
+            },
+            "grade": {
+                "S": "8"
+            },
+            "registration_role": {
+                "S": "student"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "email": {
+                "S": "sandbox.student1@stoaedu.ch"
+            },
+            "name": {
+                "S": "Sandbox Student 1"
+            },
+            "language": {
+                "S": "de"
+            },
+            "account_status": {
+                "S": "active"
+            },
+            "updated_at": {
+                "S": "2026-07-30T01:21:31+00:00"
+            },
+            "user_id": {
+                "S": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "role": {
+                "S": "student"
+            },
+            "registration_command": {
+                "S": "public_self_service"
+            },
+            "SK": {
+                "S": "PROFILE"
+            },
+            "subscription_tier": {
+                "S": "free_trial"
+            },
+            "PK": {
+                "S": "USER#bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "school_system": {
+                "S": "Lehrplan 21"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_semantic_dedupe"
+            },
+            "semantic_identity": {
+                "S": "efc9b9ecd929f35d864943db828329436eba6385a1a10397fd629a21c95ff98b"
+            },
+            "SK": {
+                "S": "DEDUPE"
+            },
+            "provider_object_id_digest": {
+                "S": "6174d4cf7cd5889370101b0c369e5501044221cb8b993db6401643ddda3abd73"
+            },
+            "PK": {
+                "S": "BILLING_SEMANTIC#efc9b9ecd929f35d864943db828329436eba6385a1a10397fd629a21c95ff98b"
+            },
+            "object_version": {
+                "N": "1785462607"
+            },
+            "schema_version": {
+                "S": "billing_semantic_dedupe.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-31T01:50:07+00:00"
+            }
+        },
+        {
+            "command_id": {
+                "S": "checkout-7ec004a35cde9df28c71fc457b18f47734ad9ea0b8fbe8fdf6923ea839fbe279"
+            },
+            "created_at": {
+                "S": "2026-07-30T02:08:21.499075+00:00"
+            },
+            "entity_type": {
+                "S": "checkout_open_guard"
+            },
+            "intent_fingerprint": {
+                "S": "95ba19259e1f49bd7d779a6f564d4e3a2c6101b9fe7fd9aab004b0c525bd92f2"
+            },
+            "SK": {
+                "S": "GUARD"
+            },
+            "command_version": {
+                "N": "1"
+            },
+            "PK": {
+                "S": "CHECKOUT_OPEN#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "schema_version": {
+                "S": "checkout_open_guard.v1"
+            },
+            "account_fence_generation": {
+                "N": "1"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-07-30T01:21:38+00:00"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "entity_type": {
+                "S": "account_fence"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:38+00:00"
+            },
+            "generation": {
+                "N": "1"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "ACCOUNT_FENCE"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "schema_version": {
+                "S": "account-fence.v1"
+            }
+        },
+        {
+            "created_at": {
+                "S": "2026-07-30T01:21:40+00:00"
+            },
+            "binding_status": {
+                "S": "confirmed"
+            },
+            "student_email": {
+                "S": "sandbox.student3@stoaedu.ch"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "CHILD#0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "student_id": {
+                "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "PK": {
+                "S": "USER#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "relationship": {
+                "S": "child"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "created_at": {
+                "S": "2026-07-30T01:21:39+00:00"
+            },
+            "binding_status": {
+                "S": "confirmed"
+            },
+            "student_email": {
+                "S": "sandbox.student2@stoaedu.ch"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "CHILD#4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "student_id": {
+                "S": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "PK": {
+                "S": "USER#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "relationship": {
+                "S": "child"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "created_at": {
+                "S": "2026-07-30T01:21:39+00:00"
+            },
+            "binding_status": {
+                "S": "confirmed"
+            },
+            "student_email": {
+                "S": "sandbox.student1@stoaedu.ch"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "CHILD#bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "student_id": {
+                "S": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "PK": {
+                "S": "USER#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "relationship": {
+                "S": "child"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "subject": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "user_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "entity_type": {
+                "S": "user_identity_inventory"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:38+00:00"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "binding_pk": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "SK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "version": {
+                "N": "1"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:38+00:00"
+            },
+            "entity_type": {
+                "S": "user_profile"
+            },
+            "registration_role": {
+                "S": "parent"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "email": {
+                "S": "sandbox.parent@stoaedu.ch"
+            },
+            "name": {
+                "S": "Sandbox Parent"
+            },
+            "account_status": {
+                "S": "active"
+            },
+            "updated_at": {
+                "S": "2026-07-30T01:21:38+00:00"
+            },
+            "user_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "role": {
+                "S": "parent"
+            },
+            "registration_command": {
+                "S": "public_self_service"
+            },
+            "SK": {
+                "S": "PROFILE"
+            },
+            "subscription_tier": {
+                "S": "free_trial"
+            },
+            "PK": {
+                "S": "USER#4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_event_inbox"
+            },
+            "semantic_identity": {
+                "S": "b3ee147c7bb8194d39077b9afd9fc4b0b9ff6f761cb18a96b4105bd6cbc97f1d"
+            },
+            "provider_object_id_digest": {
+                "S": "3915af5b4ed1ea659db0a7446488b86449e4f570ba8327a0919e9efc939eacbd"
+            },
+            "SK": {
+                "S": "EVENT"
+            },
+            "provider_event_id_digest": {
+                "S": "2e176c48042dc7350c0896a209461af52c289ababc48a029e97e0eee88ea8fab"
+            },
+            "PK": {
+                "S": "BILLING_EVENT_INBOX#2e176c48042dc7350c0896a209461af52c289ababc48a029e97e0eee88ea8fab"
+            },
+            "object_version": {
+                "N": "1785463702"
+            },
+            "schema_version": {
+                "S": "billing_event_inbox.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-31T02:08:22+00:00"
+            }
+        },
+        {
+            "subject": {
+                "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            },
+            "entity_type": {
+                "S": "identity_binding"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:35+00:00"
+            },
+            "created_by": {
+                "S": "sandbox_provisioner"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "BINDING"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#0da4c9c0-e0b1-7012-6386-5bce1532eae8"
+            }
+        },
+        {
+            "subject": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "entity_type": {
+                "S": "identity_binding"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:38+00:00"
+            },
+            "created_by": {
+                "S": "sandbox_provisioner"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "BINDING"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "command_id": {
+                "S": "checkout-7ec004a35cde9df28c71fc457b18f47734ad9ea0b8fbe8fdf6923ea839fbe279"
+            },
+            "created_at": {
+                "S": "2026-07-30T02:08:21.499075+00:00"
+            },
+            "entity_type": {
+                "S": "checkout_public_lookup"
+            },
+            "intent_fingerprint": {
+                "S": "95ba19259e1f49bd7d779a6f564d4e3a2c6101b9fe7fd9aab004b0c525bd92f2"
+            },
+            "SK": {
+                "S": "LOOKUP"
+            },
+            "PK": {
+                "S": "CHECKOUT_PUBLIC#co_2EacI_Dc87gjU42XbCxBm7dPleqPGFII2vdrvcKJTQs"
+            },
+            "checkout_ref": {
+                "S": "co_2EacI_Dc87gjU42XbCxBm7dPleqPGFII2vdrvcKJTQs"
+            },
+            "account_fence_generation": {
+                "N": "1"
+            },
+            "schema_version": {
+                "S": "checkout_public_lookup.v1"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "subject": {
+                "S": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "bd14c990-2071-70c5-7969-892e72b0d4f1"
+            },
+            "entity_type": {
+                "S": "identity_binding"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:31+00:00"
+            },
+            "created_by": {
+                "S": "sandbox_provisioner"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "BINDING"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#bd14c990-2071-70c5-7969-892e72b0d4f1"
+            }
+        },
+        {
+            "subject": {
+                "S": "4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "4dc469a0-f021-7017-7539-bdc79014ec00"
+            },
+            "entity_type": {
+                "S": "identity_binding"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:28+00:00"
+            },
+            "created_by": {
+                "S": "sandbox_provisioner"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "BINDING"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4dc469a0-f021-7017-7539-bdc79014ec00"
+            }
+        },
+        {
+            "subject": {
+                "S": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "entity_type": {
+                "S": "identity_binding"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:33+00:00"
+            },
+            "created_by": {
+                "S": "sandbox_provisioner"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "BINDING"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-07-30T01:21:33+00:00"
+            },
+            "version": {
+                "N": "1"
+            },
+            "user_id": {
+                "S": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "entity_type": {
+                "S": "account_fence"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:33+00:00"
+            },
+            "generation": {
+                "N": "1"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "ACCOUNT_FENCE"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "schema_version": {
+                "S": "account-fence.v1"
+            }
+        },
+        {
+            "subject": {
+                "S": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "user_id": {
+                "S": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "entity_type": {
+                "S": "user_identity_inventory"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:33+00:00"
+            },
+            "issuer": {
+                "S": "https://cognito-idp.eu-central-2.amazonaws.com/eu-central-2_FCpWgVayX"
+            },
+            "binding_pk": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "SK": {
+                "S": "IDENTITY#f672a149746776c38070582506033fe8ac8596defd1be0c29216709723ff2c18#4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "PK": {
+                "S": "USER#4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            }
+        },
+        {
+            "created_at": {
+                "S": "2026-07-30T01:21:39+00:00"
+            },
+            "binding_status": {
+                "S": "confirmed"
+            },
+            "status": {
+                "S": "active"
+            },
+            "SK": {
+                "S": "PARENT#4d24f960-a011-7046-4d2c-362b95315cde"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "student_id": {
+                "S": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "PK": {
+                "S": "USER#4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "relationship": {
+                "S": "child"
+            },
+            "parent_id": {
+                "S": "4d24f960-a011-7046-4d2c-362b95315cde"
+            }
+        },
+        {
+            "version": {
+                "N": "1"
+            },
+            "created_at": {
+                "S": "2026-07-30T01:21:33+00:00"
+            },
+            "entity_type": {
+                "S": "user_profile"
+            },
+            "grade": {
+                "S": "8"
+            },
+            "registration_role": {
+                "S": "student"
+            },
+            "_sandbox": {
+                "BOOL": true
+            },
+            "email": {
+                "S": "sandbox.student2@stoaedu.ch"
+            },
+            "name": {
+                "S": "Sandbox Student 2"
+            },
+            "language": {
+                "S": "de"
+            },
+            "account_status": {
+                "S": "active"
+            },
+            "updated_at": {
+                "S": "2026-07-30T01:21:33+00:00"
+            },
+            "user_id": {
+                "S": "4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "role": {
+                "S": "student"
+            },
+            "registration_command": {
+                "S": "public_self_service"
+            },
+            "SK": {
+                "S": "PROFILE"
+            },
+            "subscription_tier": {
+                "S": "free_trial"
+            },
+            "PK": {
+                "S": "USER#4d6499f0-60f1-70a4-6d31-5764ab49525c"
+            },
+            "school_system": {
+                "S": "Lehrplan 21"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_event_inbox"
+            },
+            "semantic_identity": {
+                "S": "06902a274e5587234b0d4598fed33aed725a807eb1e984c120c25cf149e0dae2"
+            },
+            "provider_object_id_digest": {
+                "S": "ab50cdfb1e1a69b8b400c08e01d4c75dfdc86b384ea6d6fb1bad79580f367c0b"
+            },
+            "SK": {
+                "S": "EVENT"
+            },
+            "provider_event_id_digest": {
+                "S": "1604d74c91662faa87bd4138b9c5428fc1aa0992a4aba489c81fdf64c1faf9ae"
+            },
+            "object_version": {
+                "N": "1785377159"
+            },
+            "PK": {
+                "S": "BILLING_EVENT_INBOX#1604d74c91662faa87bd4138b9c5428fc1aa0992a4aba489c81fdf64c1faf9ae"
+            },
+            "schema_version": {
+                "S": "billing_event_inbox.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-30T02:05:59+00:00"
+            }
+        },
+        {
+            "processing_result": {
+                "S": "registered"
+            },
+            "event_type": {
+                "S": "checkout.session.expired"
+            },
+            "entity_type": {
+                "S": "billing_event_inbox"
+            },
+            "semantic_identity": {
+                "S": "aa2b6c02766a805f90deda295637f477d72cd1cf44174d8c393fd9fc85a57064"
+            },
+            "provider_object_id_digest": {
+                "S": "d3f70fd307e13a1c22ebe3fcbed2794c6e827e9dbc032bbfcbe721ac1e7646de"
+            },
+            "SK": {
+                "S": "EVENT"
+            },
+            "provider_event_id_digest": {
+                "S": "ff38683502b553c1726fe3f1792978954c5fe26c889116dfb16c4f6076fb0d9d"
+            },
+            "PK": {
+                "S": "BILLING_EVENT_INBOX#ff38683502b553c1726fe3f1792978954c5fe26c889116dfb16c4f6076fb0d9d"
+            },
+            "object_version": {
+                "N": "1785377186"
+            },
+            "schema_version": {
+                "S": "billing_event_inbox.v1"
+            },
+            "fact_observed_at": {
+                "S": "2026-07-30T02:06:26+00:00"
+            }
+        }
+    ],
+    "Count": 39,
+    "ScannedCount": 39,
+    "ConsumedCapacity": null
+}
