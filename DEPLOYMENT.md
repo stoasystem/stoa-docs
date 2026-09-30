@@ -1,7 +1,7 @@
 # Deployment Guide
 
-> **最后更新：** 2026-08-17  
-> **当前状态：** 生产环境运行中。**后端已恢复推送即自动部署**；infra 仅自动产出变更预览；
+> **最后更新：** 2026-09-30（后端与 infra 两节；前端一节仍为 2026-08-17 的内容）  
+> **当前状态：** 生产环境运行中。**后端与 infra 都是推送 main 即部署**，infra 每次部署都会重新构建后端 main；
 > **前端尚未接入自动部署**（有会导致线上白屏的前置缺口，见下节）
 
 ---
@@ -31,7 +31,7 @@
 |------|----------|------|------|
 | `stoa-backend` | `deploy-production.yml` | `push` → `main` | **部署**：门禁 → 构建 → 更新 Lambda |
 | `stoa-backend` | `deploy.yml` | 仅 `workflow_dispatch` | 无凭证的正式发布验证 DAG，不变更任何资源 |
-| `stoa-infra` | `cdk-diff.yml` | `push` → `main` | **只读**变更预览，不部署 |
+| `stoa-infra` | `deploy-production.yml` | `push` → `main`，或手动触发 | **部署**：检查后端发布 → 构建 → `cdk deploy` 生产栈（含后端代码） |
 | `stoa-infra` | `deploy.yml` | 仅 `workflow_dispatch` | staging 资格验证，不变更任何资源 |
 | `stoa-frontend` | `frontend-ci.yml` / `deploy.yml` | 仅 `workflow_dispatch` | 验证型，**尚未接入部署** |
 
@@ -45,9 +45,11 @@
 
 1. `verify`（无任何凭证）：`uv sync --frozen --extra dev` → `ruff check .` → `pytest`。
    测试或 lint 不过就不会进入部署。
-2. `deploy`（`environment: production`，OIDC 取 `stoa-github-backend-deploy`）：
-   构建 Lambda 包 → 校验 provenance → `--dry-run` 预检 → 更新
-   `stoa-api` 与 `stoa-weekly-report` → 等待生效。
+2. `deploy`（不设 `environment`，OIDC 取 `stoa-github-backend-deploy`；设了会改写 OIDC subject，
+   角色就无法承担）：构建 Lambda 包 → 校验 provenance → `--dry-run` 预检 → 更新五个函数
+   （`stoa-api`、`stoa-weekly-report`、`stoa-dispatch-reconciler`、`stoa-account-deletion`、
+   `stoa-conversation-generation`）→ 等待生效 → 发布版本并移动 `production` 别名 →
+   读回核对并保留发布记录（见下节「发布记录」）。
 
 构建跑在 **`ubuntu-24.04-arm`** 上。这一点是必需的而非优化：包内是 linux **aarch64** wheel，
 在 x64 runner 上 `boot_smoke` 无法导入这些二进制，只能靠 `--skip-smoke` 绕过，等于放弃
@@ -56,13 +58,47 @@
 > 2026-07-16 那次部署失败的原因是 `pillow==12.3.0` 当时没有 aarch64 wheel（仓库只到 12.2.0）。
 > 该 wheel 已发布，且 `build_lambda_dist.py` 现在带 `manylinux_2_28` 往下的平台兼容阶梯。
 
-### 基础设施：只预览，不部署
+### 基础设施：推送 main 即部署，并重新构建后端
 
-`cdk-diff.yml` 在推送后检出 infra 与 backend、构建 Lambda dist、执行 `cdk diff --all`，
-把变更面写入 run summary 并上传为 `cdk-diff` artifact。它**不含** `cdk deploy`。
+`deploy-production.yml` 在推送 `main`（或手动触发）后检出 infra 与**后端 main**，重新构建
+Lambda dist，跑 infra 测试，`cdk diff` 后 `cdk deploy` 九个生产栈。CDK 把 dist 当作资产，
+所以**每次 infra 推送都会重新构建后端 main**，再由 CDK 按差异决定 `StoaApiStack` 是否更新
+五个函数的代码、版本和别名；没有差异时可能都不更新。stoasystem/stoa-backend#33 决定保留
+这一行为，按下面的有限降风险方案处理。
 
-infra 上次真实部署为 2026-06-08，此后积压了 Lambda 别名交付、不可变发布指针、
-`GSI-ReviewState`、教师申请公开路由等变更。在人工审阅 diff 之前不要开启自动部署。
+部署前后的检查（infra `scripts/check_backend_release.py` 与后端 `scripts/verify_live_release.py`）：
+
+1. 构建前、取凭证前：后端生产工作流不得有任何未完成的运行（不限触发方式）；检出的 HEAD、
+   远端 main、该提交最新一次 main push 运行三者一致，且该运行成功。任何 API 错误、分页异常
+   或缺字段都停止部署。
+2. 构建后：dist 的 manifest 必须来自同一提交、干净的工作树。
+3. 取得凭证后：线上五个 `production` 别名必须已经在运行这一提交。
+4. 紧贴 `cdk deploy`：按第 1 步确认的提交再跑一遍 1 和 3。
+5. 部署后：读回五个别名，核对下载包的哈希等于 AWS 的 `CodeSha256`、解包内容哈希等于
+   manifest 与本次构建、五个别名同一个包、没有分流，且两次读取之间版本和 revision 未变。
+
+**这些检查不是互斥锁。** GitHub 的 concurrency 按仓库隔离，跨仓库不能互斥；检查通过之后，
+后端仍可能开始发布，两边可能逐个函数交错，或把对方刚发的版本回滚。所以：
+
+> **规则：一个仓库部署期间，另一个仓库不得发布。**
+> - 推送 infra `main` 前，确认后端生产工作流没有在跑，且后端 main 已经发布成功。
+> - infra 部署运行期间不推送后端 `main`；后端部署运行期间不推送 infra `main`。
+> - 检查失败立即停止。若因另一个仓库的运行未结束而失败，等它完成后重新检查；其他失败
+>   （SHA 不一致、缺权限、包内容不符等）先查明并解决原因。任何情况都不得绕过检查。
+
+#### 发布记录
+
+读回脚本每次执行都会写出 `release.json` 与独立的 `release.json.sha256`（`sha256sum -c`
+可校验），核对失败时也写，内容为五个别名的版本、revision、分流权重、`CodeSha256`、
+`source_git_sha`、`distribution_tree_hash` 与两次读取时间。测试、构建或部署提前失败时，
+读回步骤可能被跳过，也就没有记录；summary 与上传步骤用 `always()`，只保证已有的记录
+会被发布。记录写进 run summary，并以 `release-record-attempt-<n>` artifact 保留 90 天
+（受仓库/组织上限约束）。结案时以 artifact 为准核对五个函数的版本。
+
+后端与 infra 用不同方式打包同一份 dist，ZIP 哈希不同。2026-09-30 后端发布 `436cb6d1` 后，
+infra 部署同一提交让五个函数各多出一个版本，两次的 `distribution_tree_hash` 相同。比较两次
+发布时：解包内容是否一致看 `distribution_tree_hash`，部署包字节是否一致看 `CodeSha256`，
+源码提交看 `source_git_sha`。这一次观察不证明同一路径的重复构建总能复现。
 
 ### 前端：先别接自动部署
 
