@@ -111,12 +111,16 @@
 ## ADR-010: 欧盟处理的例外（修订 ADR-006）
 
 **Status:** Accepted  
-**Date:** 2026-10-28  
-**Context:** ADR-006 把所有资源部署在 eu-central-2（苏黎世），以符合 nDSG 的数据驻留要求。有两项服务做不到只在苏黎世处理：Bedrock 上的 Claude Sonnet 4.6 在 eu-central-2 不能单区调用，只能走推理配置；Amazon Rekognition 在 eu-central-2 不提供服务。  
+**Date:** 2026-10-28（2026-11-16 补充语音转写）  
+**Context:** ADR-006 把所有资源部署在 eu-central-2（苏黎世），以符合 nDSG 的数据驻留要求。有两项服务做不到只在苏黎世处理：Bedrock 上的 Claude Sonnet 4.6 在 eu-central-2 不能单区调用，只能走推理配置；Amazon Rekognition 在 eu-central-2 不提供服务。2026-11-16 补充第三项：语音提问要把学生的录音转写成文字，eu-central-2 没有能听音频的模型。  
 **Decision:**
 - 存储不变：DynamoDB、S3、日志等所有持久数据只放在 eu-central-2。
 - AI 回答通过欧盟推理配置 `eu.anthropic.claude-sonnet-4-6` 调用。请求内容（学生的文字、对话上下文、学习会话里的图片）可能在这些欧盟区域处理：法兰克福、苏黎世、斯德哥尔摩、米兰、西班牙、爱尔兰、巴黎。
 - 图片审核调用 eu-central-1（法兰克福）的 Rekognition DetectModerationLabels，只发送图片本身。
+- 语音提问的录音由后端发给 eu-west-1（爱尔兰）的 Bedrock 模型 `mistral.voxtral-small-24b-2507` 转写，单区调用，不走推理配置（stoa-backend#469，stoa-frontend ADR 0006）。
+  - 只发送录音本身和「原样转写、不翻译」的提示词，不带学生身份和对话内容。
+  - 录音只在内存里处理：不写 S3、不写 DynamoDB、不进日志。
+  - 前提：这个孩子的「允许语音提问」开关已由已关联的家长打开。开关默认关闭；关闭时不调用模型。
 - 不得使用 `global.` 推理配置，也不得使用欧盟/EEA 以外的区域；要放开，须另立 ADR。
 - 前提：AWS Organizations 的 AI services opt-out 策略对所有服务生效，Bedrock 账户的 `data_retention_mode` 为 `none`（stoa-backend#153）。
 - 更换模型或推理配置时，从 eu-central-2 调 `GetInferenceProfile` 核对目标区域列表。
@@ -126,6 +130,7 @@
 - 这些数据只在处理过程中经过欧盟，处理完不落盘：Bedrock 不用输入输出训练模型，不交给模型提供方，且账户已关闭留存；Rekognition 在 opt-out 后不再为改进服务保存图片。
 - 欧盟推理配置的目标区域列表是固定的，数据走 AWS 内网传输；CloudTrail 在苏黎世记录每次请求实际在哪个区域处理（`additionalEventData.inferenceRegion`）。
 - 隐私说明同步写明处理地点。
+- 爱尔兰是欧盟成员国，录音转写适用同一条依据，上面的两个前提（opt-out 策略、Bedrock 关闭留存）同样是它的前提。
 
 ---
 
